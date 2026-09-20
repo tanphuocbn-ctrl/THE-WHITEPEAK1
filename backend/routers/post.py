@@ -103,7 +103,9 @@ async def bulk_assign_tasks(project_id: str, body: BulkAssignTaskIn, user: dict 
     assignee_name = None
     if body.assignee_id:
         m = next((m for m in p.get("members", []) if m["user_id"] == body.assignee_id), None)
-        assignee_name = (m.get("name") or m.get("email")) if m else None
+        if not m:
+            raise HTTPException(status_code=400, detail="Người được giao phải là thành viên dự án")
+        assignee_name = m.get("name") or m.get("email")
     updated = 0
     for tid in body.task_ids:
         doc = await db.post_tasks.find_one({"id": tid, "project_id": project_id})

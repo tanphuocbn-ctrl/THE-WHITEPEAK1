@@ -60,7 +60,14 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - Verified: curl (task, external, upload+download, edge label/lock persist) + frontend E2E (Hậu kỳ tab, arrange/fit/lock/edge label).
 
 ## Phase 3 còn lại (backlog)
-- Nhân sự/lịch chi tiết (calendar view).
+- (Đã xong) Nhân sự/lịch chi tiết (calendar view) — xem iter 7.
+
+## Implemented (2026-06, iter 7 — Điều phối nhân sự & Báo cáo PDF)
+- [x] Lịch nhân sự (studio-wide): trang `/staffing` (nav "Lịch nhân sự") — lưới 7 ngày, mỗi người 1 hàng, shot sản xuất + task hậu kỳ xếp theo deadline; điều hướng tuần trước/sau/tuần này; chip màu theo cờ (quá hạn đỏ / hoàn tất xanh). Endpoint `GET /staffing/calendar?week_start=`.
+- [x] Gán người hàng loạt: PostProduction — checkbox chọn nhiều task + thanh bulk (chọn người → giao cùng lúc). Endpoints `POST /post/tasks/bulk-assign` (validate thành viên) + `POST /shots/bulk-assign`.
+- [x] Nhắc deadline: helper `deadlineFlag` (quá hạn / sắp tới hạn ≤3 ngày, loại trừ approved/done) → tô nổi bật thẻ shot trên Board (viền đỏ/hổ phách) và chip cảnh báo trên task hậu kỳ.
+- [x] Xuất báo cáo tuần ra PDF: nút "Xuất PDF" ở `/reports` → `GET /reports/weekly/pdf` (reportlab, font DejaVu bundle tại backend/assets/fonts để hiển thị tiếng Việt đúng). PDF gồm KPI, phân bố trạng thái shot, bảng theo dự án + cảnh báo vượt ngân sách.
+- Verified: pytest 9/9 backend + frontend E2E (testing agent iter 3, 100%) + PDF render-to-image kiểm tra tiếng Việt.
 
 ## Implemented (2026-06, iter 6 — Phase 3 hoàn thiện)
 - [x] Task hậu kỳ có người phụ trách + deadline (assignee select + date, sửa inline; rev concurrency).

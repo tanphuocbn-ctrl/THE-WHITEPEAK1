@@ -1,0 +1,28 @@
+{
+  "summary": "Phase 3 features (staffing calendar, bulk-assign post tasks + shots, deadline highlight, weekly PDF export) tested end-to-end. Backend: 9/9 pytest cases pass (staffing calendar default & specific week + populated after deadline set; bulk-assign shots including non-member 400; bulk-assign post tasks with GET-verify persistence; past-deadline task flagged overdue in staffing; weekly JSON & PDF returning HTTP 200 + application/pdf + %PDF magic header). Frontend E2E: admin login → nav-staffing shows staffing-page + range label + prev/next/today changes range (14/09-20/09 → 21/09-27/09 → back); nav-reports Xuất PDF opens popup on /api/reports/weekly/pdf; DEMO-01 → Hậu kỳ creates 2 post tasks, checkboxes toggle bulk bar, assignee dropdown lists 7 members, apply gives toast 'Đã giao 2 task cho Studio Owner' and both rows show 'Studio Owner'; setting deadline to yesterday shows red 'Quá hạn' chip, +2 days shows amber 'Sắp tới hạn' chip; production board shows shot cards with amber/red deadline border styling on cards with near/overdue deadlines (SH-T-6cd2, SH-F-e27f, SH-F-cdd8 visible with colored border).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_phase3.py",
+    "/app/test_reports/pytest/pytest_phase3.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "assignments.py bulk_assign_shots does not validate assignee_id membership when body.assignee_id is None (correct — unassign is allowed) but when it IS provided the check is enforced (400). Good.",
+    "post.py bulk_assign_tasks intentionally allows non-member assignee (no validation vs project.members). Contrast with single-shot assign_shot which rejects non-members. Consider aligning: for consistency, bulk-assign post tasks should also 400 on non-member assignee_id.",
+    "misc.py staffing_calendar `flag(deadline_day, status)`: DONE_STATES already contains both 'approved' and 'done'; the extra `status == 'done'` check is redundant. Minor.",
+    "reports_pdf: builds PDF server-side each request without caching; for large studios this could be slow. Consider ETag or short-term cache keyed on week+user.",
+    "Reports.jsx uses window.open(`${API_BASE}/reports/weekly/pdf`) — relies on httpOnly cookie being sent cross-site; verified working. No issue.",
+    "Staffing.jsx week-start computation uses local timezone (ISO date of local Monday) while backend interprets as UTC date via datetime.fromisoformat — potential off-by-one for users far from UTC. Not observed in test but worth aligning.",
+    "deadlineFlag helper only handles post statuses (approved/done); does not accept 'in_progress' vs 'review' distinctions, but that's correct per spec.",
+    "PostProduction bulk-assign: no confirmation dialog when Bỏ giao (unassign) selected. Acceptable UX but potentially destructive."
+  ],
+  "updated_files": ["/app/backend/tests/test_phase3.py (new, 9 tests)"],
+  "success_rate": {"backend": "100% (9/9 phase3)", "frontend": "100% (staffing nav, bulk assign UI + toast, deadline chips, board border styling all verified)"},
+  "test_credentials": "Admin tanphuoc.bn@gmail.com / Studio@2026 (super_admin, pm of DEMO-01). All demo users password Studio@2026 as documented in /app/memory/test_credentials.md.",
+  "seed_data_creation": "test_phase3.py creates+deletes ephemeral post tasks prefixed TEST_ inside DEMO-01; E2E script creates+deletes E2E_alpha/E2E_beta post tasks. Bulk-assign shots test modifies DEMO-01 shot assignee+deadline (not reverted — acceptable since seeded data is regenerable).",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "/app/backend/tests/test_phase3.py runs in ~3s and requires REACT_APP_BACKEND_URL env (present in frontend/.env). Uses DEMO-01 (get id by /api/projects filter code=DEMO-01) and its first sequence. Testids of new features: staffing-page, staffing-prev/next/today/range, staffing-row-<uid>, staffing-item-<id>; report-export-pdf; post-task-input/add/select-all, post-bulk-bar/assignee/apply, post-task-check-<id>, post-task-deadline-<id>, post-task-flag-<id>. Deadline chip labels: 'Quá hạn', 'Sắp tới hạn'. Frontend deadlineFlag helper in /app/frontend/src/lib/constants.js.",
+  "rca of the issue": "No blocking issues."
+}
