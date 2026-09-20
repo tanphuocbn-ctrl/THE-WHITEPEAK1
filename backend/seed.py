@@ -1,7 +1,9 @@
+import os
 from datetime import datetime, timezone, timedelta
 
 from db import db
 import auth as A
+import storage
 from common import new_id, now_iso
 
 DEMO_PASSWORD = "Studio@2026"
@@ -30,7 +32,6 @@ async def _ensure_user(email, name, role):
 async def seed_demo():
     if await db.projects.find_one({"code": "DEMO-01"}):
         return
-    import os
     admin = await db.users.find_one({"email": os.environ.get("ADMIN_EMAIL", "").lower()})
     if not admin:
         return
@@ -87,3 +88,46 @@ async def seed_demo():
             "current_version_id": None, "approved_version_id": None, "latest_version_id": None,
             "version_generation": 0, "rev": 0, "created_at": now_iso(), "updated_at": now_iso(),
         })
+
+
+ASSET_MP4 = os.path.join(os.path.dirname(__file__), "assets", "sample.mp4")
+
+
+async def seed_sample_video():
+    """Upload a bundled sample mp4 as a version on SH-020 of DEMO-01 so the review
+    video player is demonstrable out of the box. Idempotent."""
+    project = await db.projects.find_one({"code": "DEMO-01"})
+    if not project:
+        return
+    pid = project["id"]
+    shot = await db.shots.find_one({"project_id": pid, "code": "SH-020"})
+    if not shot:
+        return
+    if await db.versions.count_documents({"shot_id": shot["id"]}) > 0:
+        return
+    if not os.path.exists(ASSET_MP4):
+        return
+    with open(ASSET_MP4, "rb") as f:
+        content = f.read()
+    vid = new_id()
+    path = f"{storage.APP_NAME}/{pid}/{shot['id']}/{vid}.mp4"
+    try:
+        result = storage.put_object(path, content, "video/mp4")
+    except Exception:
+        return
+    vdoc = {
+        "id": vid, "shot_id": shot["id"], "project_id": pid, "version_number": 1,
+        "storage_path": result["path"], "original_filename": "sample-review.mp4",
+        "content_type": "video/mp4", "size": result.get("size", len(content)),
+        "note": "Bản dựng mẫu để thử trình duyệt video + timecode.",
+        "uploaded_by": shot.get("assignee_id") or project["created_by"],
+        "uploaded_by_name": shot.get("assignee_name") or "Studio Owner",
+        "status": "submitted", "is_deleted": False, "created_at": now_iso(),
+    }
+    await db.versions.insert_one(dict(vdoc))
+    await db.shots.update_one(
+        {"id": shot["id"]},
+        {"$set": {"latest_version_id": vid, "current_version_id": vid,
+                  "version_generation": 1, "status": "review", "updated_at": now_iso()},
+         "$inc": {"rev": 1}},
+    )

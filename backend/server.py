@@ -11,7 +11,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 import auth as A
 import storage
-from seed import seed_demo
+from seed import seed_demo, seed_sample_video
 from routers import auth_routes, projects, structure, assignments, versions, reviews, scripts, audit, misc, canvas
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -62,6 +62,10 @@ async def startup():
         logger.info("Storage initialized")
     except Exception as e:
         logger.error(f"Storage init failed: {e}")
+    try:
+        await seed_sample_video()
+    except Exception as e:
+        logger.error(f"Seed sample video failed: {e}")
     logger.info("Startup complete")
 
 

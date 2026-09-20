@@ -6,12 +6,14 @@ import { can } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ShotSheet from "@/components/ShotSheet";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Clapperboard, Film, User, MapPin, Image as ImageIcon, MessageSquare,
-  Undo2, Redo2, Save, Camera, Link2, Trash2, Loader2, History, X, Plus, Minus,
+  Undo2, Redo2, Save, Camera, Link2, Trash2, Loader2, History, X, Plus, Minus, Boxes, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,7 +30,7 @@ let idc = 0;
 const uid = () => `n${Date.now()}${idc++}`;
 
 export default function Canvas() {
-  const { projectId, myRole } = useProject();
+  const { project, projectId, myRole } = useProject();
   const { user } = useAuth();
   const canEdit = can(user, myRole, "canvas.write");
 
@@ -44,6 +46,10 @@ export default function Canvas() {
   const [snapshots, setSnapshots] = useState([]);
   const [snapOpen, setSnapOpen] = useState(false);
   const [snapName, setSnapName] = useState("");
+  const [scenes, setScenes] = useState([]);
+  const [shots, setShots] = useState([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [openShot, setOpenShot] = useState(null);
 
   const past = useRef([]);
   const future = useRef([]);
@@ -60,6 +66,10 @@ export default function Canvas() {
       setNodes(r.data.nodes || []); setEdges(r.data.edges || []); setRev(r.data.rev || 0);
     }).finally(() => setLoading(false));
     loadSnaps();
+    Promise.all([
+      api.get(`/projects/${projectId}/scenes`),
+      api.get(`/projects/${projectId}/shots`),
+    ]).then(([sc, sh]) => { setScenes(sc.data); setShots(sh.data); }).catch(() => {});
   }, [projectId, loadSnaps]);
 
   const snapshotState = () => ({ nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) });
@@ -106,6 +116,24 @@ export default function Canvas() {
     const n = { id: uid(), type, x: cx, y: cy, w: 180, h: 90, title: t.label + " mới", text: "", color: t.color };
     commit([...nodes, n], edges);
     setSel(n.id);
+  };
+
+  const addRefNode = (type, item) => {
+    if (!canEdit) return;
+    const existing = nodes.find((n) => n.ref_id === item.id && n.type === type);
+    if (existing) { setSel(existing.id); setPickerOpen(false); toast.message("Node đã có trên canvas"); return; }
+    const rect = wrap.current.getBoundingClientRect();
+    const off = (nodes.length % 6) * 34;
+    const cx = (-view.tx + rect.width / 2) / view.scale - 90 + off;
+    const cy = (-view.ty + rect.height / 2) / view.scale - 45 + off;
+    const t = NODE_TYPES[type];
+    const n = {
+      id: uid(), type, x: cx, y: cy, w: 190, h: 90,
+      title: `${item.code} · ${item.title}`, text: "", color: t.color, ref_id: item.id,
+    };
+    commit([...nodes, n], edges);
+    setSel(n.id);
+    setPickerOpen(false);
   };
 
   const removeNode = (nid) => {
@@ -212,6 +240,47 @@ export default function Canvas() {
             </Button>
           );
         })}
+        {canEdit && (
+          <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" data-testid="add-from-project-btn"
+                className="border-blue-800 bg-blue-950/40 text-blue-200 hover:bg-blue-900/40">
+                <Boxes className="mr-1.5 h-3.5 w-3.5" /> Từ dự án
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-[#18181b] border-zinc-800">
+              <DialogHeader><DialogTitle className="font-head">Thêm node liên kết dữ liệu thật</DialogTitle></DialogHeader>
+              <Tabs defaultValue="shots">
+                <TabsList className="bg-[#0f0f11] border border-zinc-800">
+                  <TabsTrigger value="shots" data-testid="picker-tab-shots">Shots ({shots.length})</TabsTrigger>
+                  <TabsTrigger value="scenes" data-testid="picker-tab-scenes">Scenes ({scenes.length})</TabsTrigger>
+                </TabsList>
+                <TabsContent value="shots" className="mt-3 max-h-72 overflow-y-auto thin-scroll space-y-1.5">
+                  {shots.length === 0 ? <p className="text-sm text-zinc-500 py-2">Chưa có shot.</p> : shots.map((s) => (
+                    <button key={s.id} onClick={() => addRefNode("shot", s)} data-testid={`pick-shot-${s.code}`}
+                      className="flex w-full items-center gap-2 rounded-md border border-zinc-800 bg-[#0f0f11] p-2.5 text-left hover:border-purple-600 transition-colors">
+                      <Film className="h-4 w-4 text-purple-400 shrink-0" />
+                      <span className="font-mono text-xs text-purple-300">{s.code}</span>
+                      <span className="flex-1 truncate text-sm">{s.title}</span>
+                      <Plus className="h-3.5 w-3.5 text-zinc-500" />
+                    </button>
+                  ))}
+                </TabsContent>
+                <TabsContent value="scenes" className="mt-3 max-h-72 overflow-y-auto thin-scroll space-y-1.5">
+                  {scenes.length === 0 ? <p className="text-sm text-zinc-500 py-2">Chưa có scene.</p> : scenes.map((s) => (
+                    <button key={s.id} onClick={() => addRefNode("scene", s)} data-testid={`pick-scene-${s.code}`}
+                      className="flex w-full items-center gap-2 rounded-md border border-zinc-800 bg-[#0f0f11] p-2.5 text-left hover:border-blue-600 transition-colors">
+                      <Clapperboard className="h-4 w-4 text-blue-400 shrink-0" />
+                      <span className="font-mono text-xs text-blue-300">{s.code}</span>
+                      <span className="flex-1 truncate text-sm">{s.title}</span>
+                      <Plus className="h-3.5 w-3.5 text-zinc-500" />
+                    </button>
+                  ))}
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
+        )}
         <div className="ml-auto flex items-center gap-1">
           <Button size="icon" variant="ghost" onClick={undo} disabled={!canEdit} data-testid="canvas-undo" className="text-zinc-400"><Undo2 className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={redo} disabled={!canEdit} data-testid="canvas-redo" className="text-zinc-400"><Redo2 className="h-4 w-4" /></Button>
@@ -289,6 +358,17 @@ export default function Canvas() {
                 <div className="px-2.5 pb-2.5 pt-1">
                   <p className="text-sm font-medium text-zinc-100 leading-tight break-words">{n.title}</p>
                   {n.text && <p className="mt-1 text-xs text-zinc-400 break-words whitespace-pre-line">{n.text}</p>}
+                  {n.ref_id && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400 border border-emerald-500/20">● dữ liệu thật</span>
+                      {n.type === "shot" && (
+                        <button onMouseDown={(e) => { e.stopPropagation(); setOpenShot(n.ref_id); }}
+                          data-testid={`node-open-${n.ref_id}`} className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:underline">
+                          <ExternalLink className="h-3 w-3" /> Mở
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -326,6 +406,11 @@ export default function Canvas() {
           <Textarea value={selNode.text} onChange={(e) => updateNode(selNode.id, { text: e.target.value })}
             placeholder="Nội dung / ghi chú" data-testid="node-text-input" className="mt-3 bg-[#0f0f11] border-zinc-800 text-sm" />
         </div>
+      )}
+
+      {openShot && (
+        <ShotSheet projectId={projectId} shotId={openShot} myRole={myRole} members={project.members || []}
+          onClose={() => setOpenShot(null)} onChanged={() => {}} />
       )}
     </div>
   );
