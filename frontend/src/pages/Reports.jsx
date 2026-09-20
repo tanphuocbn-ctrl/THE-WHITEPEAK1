@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "@/lib/api";
+import api, { API_BASE } from "@/lib/api";
 import { SHOT_STATUS } from "@/lib/constants";
-import { Loader2, CalendarDays, UploadCloud, CheckCircle2, RotateCcw, Clapperboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, CalendarDays, UploadCloud, CheckCircle2, RotateCcw, Clapperboard, FileDown } from "lucide-react";
 
 const Stat = ({ icon: Icon, label, value, accent }) => (
   <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5" data-testid={`report-stat-${label}`}>
@@ -19,10 +20,16 @@ export default function Reports() {
 
   return (
     <div className="mx-auto max-w-6xl p-6 lg:p-8 animate-fade-up">
-      <div className="mb-8">
-        <p className="overline flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> Báo cáo tuần</p>
-        <h1 className="font-head text-3xl font-extrabold tracking-tight mt-1">Tổng hợp 7 ngày qua</h1>
-        <p className="mt-1 text-sm text-zinc-400">Tiến độ sản xuất & hậu kỳ trên toàn studio.</p>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="overline flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5" /> Báo cáo tuần</p>
+          <h1 className="font-head text-3xl font-extrabold tracking-tight mt-1">Tổng hợp 7 ngày qua</h1>
+          <p className="mt-1 text-sm text-zinc-400">Tiến độ sản xuất & hậu kỳ trên toàn studio.</p>
+        </div>
+        <Button onClick={() => window.open(`${API_BASE}/reports/weekly/pdf`, "_blank")}
+          data-testid="report-export-pdf" className="bg-blue-600 hover:bg-blue-500 text-white">
+          <FileDown className="mr-2 h-4 w-4" /> Xuất PDF
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Response
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 
 from db import db, clean
 import auth as A
 import rbac
+from reports_pdf import build_weekly_pdf
 
 router = APIRouter(tags=["misc"])
 
@@ -19,12 +20,15 @@ async def search_users(q: Optional[str] = None, user: dict = Depends(A.get_curre
     return [{"id": str(d["_id"]), "email": d["email"], "name": d.get("name"), "role": d.get("role")} for d in docs]
 
 
+async def _scoped_projects(user: dict):
+    if rbac.is_super(user) or user.get("role") == rbac.ROLE_SECRETARY:
+        return await db.projects.find().to_list(1000)
+    return await db.projects.find({"members.user_id": user["id"]}).to_list(1000)
+
+
 @router.get("/dashboard")
 async def dashboard(user: dict = Depends(A.get_current_user)):
-    if rbac.is_super(user) or user.get("role") == rbac.ROLE_SECRETARY:
-        projects = await db.projects.find().to_list(1000)
-    else:
-        projects = await db.projects.find({"members.user_id": user["id"]}).to_list(1000)
+    projects = await _scoped_projects(user)
     pids = [p["id"] for p in projects]
     status_counts = {}
     for st in ["todo", "in_progress", "review", "rejected", "approved", "done"]:
@@ -42,12 +46,8 @@ async def dashboard(user: dict = Depends(A.get_current_user)):
     }
 
 
-@router.get("/reports/weekly")
-async def weekly_report(user: dict = Depends(A.get_current_user)):
-    if rbac.is_super(user) or user.get("role") == rbac.ROLE_SECRETARY:
-        projects = await db.projects.find().to_list(1000)
-    else:
-        projects = await db.projects.find({"members.user_id": user["id"]}).to_list(1000)
+async def _weekly_data(user: dict):
+    projects = await _scoped_projects(user)
     pids = [p["id"] for p in projects]
     week_start = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
 
@@ -84,3 +84,92 @@ async def weekly_report(user: dict = Depends(A.get_current_user)):
         "shot_status": status_counts,
         "projects": rows,
     }
+
+
+@router.get("/reports/weekly")
+async def weekly_report(user: dict = Depends(A.get_current_user)):
+    return await _weekly_data(user)
+
+
+@router.get("/reports/weekly/pdf")
+async def weekly_report_pdf(user: dict = Depends(A.get_current_user)):
+    data = await _weekly_data(user)
+    pdf = build_weekly_pdf(data, user)
+    fn = f"bao-cao-tuan-{datetime.now(timezone.utc).strftime('%Y%m%d')}.pdf"
+    return Response(content=pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{fn}"'})
+
+
+DONE_STATES = {"approved", "done"}
+
+
+@router.get("/staffing/calendar")
+async def staffing_calendar(week_start: Optional[str] = None, user: dict = Depends(A.get_current_user)):
+    """Studio-wide weekly staffing: who is busy with what, per day (by deadline)."""
+    projects = await _scoped_projects(user)
+    pids = [p["id"] for p in projects]
+    projmap = {p["id"]: p for p in projects}
+
+    if week_start:
+        try:
+            start = datetime.fromisoformat(week_start).date()
+        except Exception:
+            start = datetime.now(timezone.utc).date()
+    else:
+        today = datetime.now(timezone.utc).date()
+        start = today - timedelta(days=today.weekday())  # Monday
+    days = [(start + timedelta(days=i)).isoformat() for i in range(7)]
+    day_set = set(days)
+    today_iso = datetime.now(timezone.utc).date().isoformat()
+
+    shots = await db.shots.find({"project_id": {"$in": pids}, "assignee_id": {"$nin": [None, ""]},
+                                 "deadline": {"$nin": [None, ""]}}).to_list(10000)
+    tasks = await db.post_tasks.find({"project_id": {"$in": pids}, "assignee_id": {"$nin": [None, ""]},
+                                      "deadline": {"$nin": [None, ""]}}).to_list(10000)
+
+    people = {}
+
+    def ensure(uid, name):
+        if uid not in people:
+            people[uid] = {"user_id": uid, "name": name or "—", "days": {d: [] for d in days}, "total": 0}
+        return people[uid]
+
+    def flag(deadline_day, status):
+        if status in DONE_STATES or status == "done":
+            return "done"
+        if deadline_day < today_iso:
+            return "overdue"
+        return "normal"
+
+    for s in shots:
+        d = (s.get("deadline") or "")[:10]
+        if d not in day_set:
+            continue
+        uid = s["assignee_id"]
+        pr = projmap.get(s["project_id"], {})
+        person = ensure(uid, s.get("assignee_name"))
+        person["days"][d].append({
+            "kind": "shot", "id": s["id"], "label": s.get("code") or s.get("title"),
+            "title": s.get("title"), "project_id": s["project_id"], "project_code": pr.get("code"),
+            "status": s.get("status"), "deadline": s.get("deadline"),
+            "flag": flag(d, s.get("status")),
+        })
+        person["total"] += 1
+
+    for t in tasks:
+        d = (t.get("deadline") or "")[:10]
+        if d not in day_set:
+            continue
+        uid = t["assignee_id"]
+        pr = projmap.get(t["project_id"], {})
+        person = ensure(uid, t.get("assignee_name"))
+        person["days"][d].append({
+            "kind": "post", "id": t["id"], "label": t.get("title"),
+            "title": t.get("title"), "project_id": t["project_id"], "project_code": pr.get("code"),
+            "status": t.get("status"), "deadline": t.get("deadline"),
+            "flag": flag(d, t.get("status")),
+        })
+        person["total"] += 1
+
+    rows = sorted(people.values(), key=lambda x: x["name"].lower())
+    return {"week_start": start.isoformat(), "days": days, "people": rows}

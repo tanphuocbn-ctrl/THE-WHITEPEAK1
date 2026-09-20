@@ -65,3 +65,23 @@ export function fmtBytes(n) {
   while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
   return `${v.toFixed(v < 10 && i > 0 ? 1 : 0)} ${u[i]}`;
 }
+
+// Deadline reminder: highlight items overdue or due within 3 days (excludes finished states)
+export const DEADLINE_SOON_DAYS = 3;
+
+export function deadlineFlag(deadline, status) {
+  if (!deadline || status === "approved" || status === "done") return null;
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const d = new Date(deadline); if (isNaN(d)) return null; d.setHours(0, 0, 0, 0);
+  const diff = Math.round((d - now) / 86400000);
+  if (diff < 0) return "overdue";
+  if (diff <= DEADLINE_SOON_DAYS) return "soon";
+  return null;
+}
+
+export const DEADLINE_CLS = {
+  overdue: "text-red-300 border-red-500/40 bg-red-500/10",
+  soon: "text-amber-300 border-amber-500/40 bg-amber-500/10",
+};
+
+export const DEADLINE_LABEL = { overdue: "Quá hạn", soon: "Sắp tới hạn" };

@@ -23,6 +23,41 @@ class StatusIn(BaseModel):
     rev: int
 
 
+class BulkAssignIn(BaseModel):
+    shot_ids: list[str]
+    assignee_id: Optional[str] = None
+    deadline: Optional[str] = None
+
+
+@router.post("/shots/bulk-assign")
+async def bulk_assign_shots(project_id: str, body: BulkAssignIn, user: dict = Depends(A.get_current_user)):
+    p = await get_project_or_404(project_id)
+    rbac.require_cap(user, p, "assignment.write")
+    assignee_name = None
+    if body.assignee_id:
+        member = next((m for m in p.get("members", []) if m["user_id"] == body.assignee_id), None)
+        if not member:
+            raise HTTPException(status_code=400, detail="Người được giao phải là thành viên dự án")
+        assignee_name = member.get("name") or member.get("email")
+    updated = 0
+    for sid in body.shot_ids:
+        shot = await db.shots.find_one({"id": sid, "project_id": project_id})
+        if not shot:
+            continue
+        changes = {"assignee_id": body.assignee_id, "assignee_name": assignee_name, "updated_at": now_iso()}
+        if body.deadline is not None:
+            changes["deadline"] = body.deadline
+        if body.assignee_id and shot.get("status") == "todo":
+            changes["status"] = "in_progress"
+        res = await db.shots.find_one_and_update({"id": sid, "rev": shot.get("rev", 0)},
+                                                 {"$set": changes, "$inc": {"rev": 1}}, return_document=True)
+        if res:
+            updated += 1
+            await audit(project_id, "shot", sid, "assign", user, before=clean(shot), after=clean(dict(res)),
+                        restorable=True, label=f"Giao hàng loạt shot {res.get('code')} → {assignee_name or 'trống'}")
+    return {"updated": updated, "assignee_name": assignee_name}
+
+
 @router.post("/shots/{shot_id}/assign")
 async def assign_shot(project_id: str, shot_id: str, body: AssignIn, user: dict = Depends(A.get_current_user)):
     p = await get_project_or_404(project_id)

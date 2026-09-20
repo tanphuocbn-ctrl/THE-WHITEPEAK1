@@ -20,6 +20,7 @@ import PostProduction from "@/pages/project/PostProduction";
 import SkillLibrary from "@/pages/project/SkillLibrary";
 import Budget from "@/pages/project/Budget";
 import Reports from "@/pages/Reports";
+import Staffing from "@/pages/Staffing";
 import Members from "@/pages/project/Members";
 import AuditLog from "@/pages/project/AuditLog";
 
@@ -49,6 +50,7 @@ function App() {
                 <Route path="audit" element={<AuditLog />} />
               </Route>
               <Route path="reports" element={<Reports />} />
+              <Route path="staffing" element={<Staffing />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useProject } from "./ProjectLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { BOARD_COLUMNS, fmtDate } from "@/lib/constants";
+import { BOARD_COLUMNS, fmtDate, deadlineFlag, DEADLINE_CLS } from "@/lib/constants";
 import ShotSheet from "@/components/ShotSheet";
 import { Button } from "@/components/ui/button";
 import { Loader2, User } from "lucide-react";
@@ -50,9 +50,11 @@ export default function Board() {
                   <span className="rounded-full bg-zinc-800 px-2 text-xs tabular text-zinc-400">{items.length}</span>
                 </div>
                 <div className="p-2 space-y-2 min-h-[120px]">
-                  {items.map((s) => (
+                  {items.map((s) => {
+                    const fl = deadlineFlag(s.deadline, s.status);
+                    return (
                     <button key={s.id} onClick={() => setOpenShot(s.id)} data-testid={`card-${s.code}`}
-                      className="w-full rounded-md border border-zinc-800/80 bg-[#18181b] p-3 text-left hover:border-zinc-700 transition-colors animate-fade-up">
+                      className={`w-full rounded-md border bg-[#18181b] p-3 text-left transition-colors animate-fade-up ${fl === "overdue" ? "border-red-500/50 ring-1 ring-red-500/20" : fl === "soon" ? "border-amber-500/40" : "border-zinc-800/80 hover:border-zinc-700"}`}>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs text-blue-400">{s.code}</span>
                         <span className="text-xs text-zinc-600">{s.scene_code}</span>
@@ -60,10 +62,11 @@ export default function Board() {
                       <p className="mt-1 text-sm truncate">{s.title}</p>
                       <div className="mt-2 flex items-center justify-between text-xs text-zinc-500">
                         <span className="truncate">{s.assignee_name || "chưa giao"}</span>
-                        <span className="tabular">{fmtDate(s.deadline)}</span>
+                        <span className={`tabular rounded px-1.5 py-0.5 border ${fl ? DEADLINE_CLS[fl] : "border-transparent"}`}>{fmtDate(s.deadline)}</span>
                       </div>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );

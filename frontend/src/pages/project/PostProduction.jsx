@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useProject } from "./ProjectLayout";
 import api, { apiError, API_BASE } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { can, fmtDate, fmtBytes } from "@/lib/constants";
+import { can, fmtDate, fmtBytes, deadlineFlag, DEADLINE_CLS, DEADLINE_LABEL } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Loader2, Film, Plus, Trash2, Download, ExternalLink, Link2, Upload, Star, ListChecks,
+  Loader2, Film, Plus, Trash2, Download, ExternalLink, Link2, Upload, Star, ListChecks, Users, X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,6 +44,8 @@ export default function PostProduction() {
   const [newTask, setNewTask] = useState("");
   const [newAssignee, setNewAssignee] = useState("none");
   const [newDeadline, setNewDeadline] = useState("");
+  const [selected, setSelected] = useState(new Set());
+  const [bulkAssignee, setBulkAssignee] = useState("none");
   const members = project.members || [];
 
   useEffect(() => {
@@ -59,9 +61,24 @@ export default function PostProduction() {
       api.get(`/projects/${projectId}/post/tasks?sequence_id=${sid}`),
       api.get(`/projects/${projectId}/post/manifest?sequence_id=${sid}`),
     ]);
-    setTasks(t.data); setManifest(m.data);
+    setTasks(t.data); setManifest(m.data); setSelected(new Set());
   };
   const selectSeq = (s) => { setSel(s); loadSeq(s.id); };
+
+  const toggleSel = (id) => setSelected((prev) => {
+    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
+  });
+  const toggleAll = () => setSelected((prev) => prev.size === tasks.length ? new Set() : new Set(tasks.map((t) => t.id)));
+  const bulkAssign = async () => {
+    try {
+      const { data } = await api.post(`/projects/${projectId}/post/tasks/bulk-assign`, {
+        task_ids: Array.from(selected),
+        assignee_id: bulkAssignee === "none" ? null : bulkAssignee,
+      });
+      toast.success(`Đã giao ${data.updated} task cho ${data.assignee_name || "— (bỏ giao)"}`);
+      setBulkAssignee("none"); loadSeq(sel.id);
+    } catch (e) { toast.error(apiError(e)); }
+  };
 
   const addTask = async () => {
     if (!newTask.trim()) return;
@@ -115,7 +132,26 @@ export default function PostProduction() {
           <div className="rounded-lg border border-zinc-800/80 bg-[#18181b]">
             <div className="flex items-center justify-between border-b border-zinc-800/80 p-4">
               <h3 className="font-head font-semibold flex items-center gap-2"><ListChecks className="h-4 w-4 text-zinc-500" /> Task hậu kỳ — {sel.title}</h3>
+              {canWrite && tasks.length > 0 && (
+                <button onClick={toggleAll} data-testid="post-task-select-all" className="text-xs text-zinc-400 hover:text-zinc-100">
+                  {selected.size === tasks.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                </button>
+              )}
             </div>
+            {canWrite && selected.size > 0 && (
+              <div className="flex flex-wrap items-center gap-2 bg-blue-500/[0.06] border-b border-blue-500/20 p-3" data-testid="post-bulk-bar">
+                <span className="inline-flex items-center gap-1.5 text-sm text-blue-200"><Users className="h-4 w-4" /> Đã chọn {selected.size} task</span>
+                <Select value={bulkAssignee} onValueChange={setBulkAssignee}>
+                  <SelectTrigger data-testid="post-bulk-assignee" className="w-48 h-8 bg-[#0f0f11] border-zinc-800"><SelectValue placeholder="Giao cho…" /></SelectTrigger>
+                  <SelectContent className="bg-[#18181b] border-zinc-800">
+                    <SelectItem value="none">— Bỏ giao —</SelectItem>
+                    {members.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{m.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button size="sm" onClick={bulkAssign} data-testid="post-bulk-apply" className="bg-blue-600 hover:bg-blue-500 text-white h-8">Giao {selected.size} task</Button>
+                <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="h-8 text-zinc-400"><X className="h-4 w-4" /></Button>
+              </div>
+            )}
             {canWrite && (
               <div className="flex flex-wrap gap-2 p-4 border-b border-zinc-800/80">
                 <Input value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="Tên task (VD: Color grading hồi 1)"
@@ -135,9 +171,16 @@ export default function PostProduction() {
               <p className="p-6 text-center text-sm text-zinc-500">Chưa có task hậu kỳ.</p>
             ) : (
               <div className="divide-y divide-zinc-800/80">
-                {tasks.map((t) => (
-                  <div key={t.id} className="flex flex-wrap items-center gap-3 p-4" data-testid={`post-task-${t.id}`}>
-                    <span className="flex-1 min-w-[160px] truncate text-sm">{t.title}</span>
+                {tasks.map((t) => {
+                  const fl = deadlineFlag(t.deadline, t.status);
+                  return (
+                  <div key={t.id} className={`flex flex-wrap items-center gap-3 p-4 ${selected.has(t.id) ? "bg-blue-500/[0.05]" : ""}`} data-testid={`post-task-${t.id}`}>
+                    {canWrite && (
+                      <input type="checkbox" checked={selected.has(t.id)} onChange={() => toggleSel(t.id)}
+                        data-testid={`post-task-check-${t.id}`} className="h-4 w-4 accent-blue-600 cursor-pointer" />
+                    )}
+                    <span className="flex-1 min-w-[140px] truncate text-sm">{t.title}</span>
+                    {fl && <span className={`rounded px-1.5 py-0.5 text-[10px] border ${DEADLINE_CLS[fl]}`} data-testid={`post-task-flag-${t.id}`}>{DEADLINE_LABEL[fl]}</span>}
                     {canWrite ? (
                       <>
                         <Select value={t.assignee_id || "none"} onValueChange={(v) => patchTask(t, { assignee_id: v === "none" ? null : v })}>
@@ -165,7 +208,8 @@ export default function PostProduction() {
                       </>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -91,6 +91,35 @@ async def update_task(project_id: str, tid: str, body: TaskUpdate, user: dict = 
     return clean(res)
 
 
+class BulkAssignTaskIn(BaseModel):
+    task_ids: List[str]
+    assignee_id: Optional[str] = None
+
+
+@router.post("/tasks/bulk-assign")
+async def bulk_assign_tasks(project_id: str, body: BulkAssignTaskIn, user: dict = Depends(A.get_current_user)):
+    p = await get_project_or_404(project_id)
+    rbac.require_cap(user, p, "post.write")
+    assignee_name = None
+    if body.assignee_id:
+        m = next((m for m in p.get("members", []) if m["user_id"] == body.assignee_id), None)
+        assignee_name = (m.get("name") or m.get("email")) if m else None
+    updated = 0
+    for tid in body.task_ids:
+        doc = await db.post_tasks.find_one({"id": tid, "project_id": project_id})
+        if not doc:
+            continue
+        res = await db.post_tasks.find_one_and_update(
+            {"id": tid, "rev": doc.get("rev", 0)},
+            {"$set": {"assignee_id": body.assignee_id, "assignee_name": assignee_name, "updated_at": now_iso()},
+             "$inc": {"rev": 1}}, return_document=True)
+        if res:
+            updated += 1
+            await audit(project_id, "post_task", tid, "update", user, before=clean(doc), after=clean(dict(res)),
+                        restorable=True, label=f"Giao hàng loạt task HK → {assignee_name or 'trống'}")
+    return {"updated": updated, "assignee_name": assignee_name}
+
+
 @router.delete("/tasks/{tid}")
 async def delete_task(project_id: str, tid: str, user: dict = Depends(A.get_current_user)):
     p = await get_project_or_404(project_id)
