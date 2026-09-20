@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: rgb(39 39 42 / 0.8);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #09090b;
+  color: #f4f4f5;
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-head {
+  font-family: 'Manrope', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.font-mono, code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.overline {
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+  font-weight: 600;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #111113; }
+::-webkit-scrollbar-thumb { background: #27272a; border-radius: 6px; border: 2px solid #111113; }
+::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+::selection { background: #2563eb; color: #fff; }
+
+.thin-scroll { scrollbar-width: thin; scrollbar-color: #27272a #111113; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fadeUp 0.28s ease-out both; }
+
+.tabular { font-variant-numeric: tabular-nums; }

@@ -1,0 +1,98 @@
+{
+  "theme": "dark",
+  "archetype": "The Performance Pro & High-Contrast Swiss",
+  "typography": {
+    "headings": "Manrope",
+    "body": "IBM Plex Sans",
+    "mono": "JetBrains Mono",
+    "rules": [
+      "Use Manrope for all Headings (H1-H6) with tracking-tight. NEVER use Inter for headings.",
+      "Use IBM Plex Sans for body text to ensure excellent Vietnamese character legibility and technical density.",
+      "Use JetBrains Mono for Timecodes, Shot IDs, and Version numbers to ensure exact alignment.",
+      "Overlines/Labels: Uppercase, text-xs, tracking-[0.1em], text-zinc-400."
+    ]
+  },
+  "colors": {
+    "backgrounds": {
+      "app_bg": "bg-[#09090b] (Obsidian Black)",
+      "sidebar_bg": "bg-[#111113] (Deep Charcoal)",
+      "card_surface": "bg-[#18181b] (Zinc-900)",
+      "hover_surface": "hover:bg-[#27272a] (Zinc-800)"
+    },
+    "text": {
+      "primary": "text-zinc-100",
+      "secondary": "text-zinc-400",
+      "disabled": "text-zinc-600"
+    },
+    "accents": {
+      "primary_action": "bg-blue-600 hover:bg-blue-500 text-white",
+      "status_approved": "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20",
+      "status_review": "text-amber-400 bg-amber-500/10 border border-amber-500/20",
+      "status_rejected": "text-red-400 bg-red-500/10 border border-red-500/20",
+      "status_todo": "text-zinc-300 bg-zinc-500/10 border border-zinc-500/20"
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid border-zinc-800/80 on all cards and sidebars to define hierarchy without shadows.",
+    "shadows": "Minimal. Rely on surface colors and 1px borders instead of drop shadows. Use subtle shadow-lg only for dropdowns and popovers.",
+    "radii": "Small and precise: rounded-md (6px) for inner elements (buttons, pills), rounded-lg (8px) for cards/panels.",
+    "glassmorphism": "Use sparingly for sticky headers or review overlays: backdrop-blur-xl bg-[#09090b]/80 border-b border-zinc-800."
+  },
+  "layouts": {
+    "app_shell": "Linear-inspired shell. Collapsible left sidebar (w-64) with dense tree navigation. Main canvas takes remaining width. Sticky top header for contextual actions.",
+    "spacing": "Dense 'Bento' and List Grids. Use p-4 or p-6 for containers. Use gap-2 or gap-4 for dense data rows. Do not use excessive whitespace as this is a professional workspace.",
+    "data_density": "High. Use compact table rows (h-10 or h-12) and clear column alignments.",
+    "panels": "Use slide-over (Sheet) from the right side for Shot Detail, Version Upload, and Review Feedback to keep the user in context."
+  },
+  "components": {
+    "status_pills": "Pill-shaped (rounded-full), text-xs font-medium, px-2.5 py-0.5.",
+    "tree_navigation": "Sidebar tree for Sequence > Scene > Shot. Use chevron icons, distinct indentation (pl-4 per level), and hover highlight states.",
+    "video_player_review": "Custom wrapper with absolute positioned Timecode markers on the progress bar. Use transparent overlay for drawing/feedback.",
+    "script_diff_view": "Split or inline diff. Added text: bg-emerald-500/20 text-emerald-200. Removed text: line-through bg-red-500/20 text-red-200.",
+    "kanban_board": "For assignments. Strict columns (To Do, In Progress, Review, Done). Minimal gap between cards (gap-2), thin borders."
+  },
+  "motion": {
+    "interactions": "Fast and snappy. transition-colors duration-150 for hovers. transition-all duration-200 ease-out for slide-overs.",
+    "lists": "Subtle stagger entrance for lists and kanban boards."
+  },
+  "accessibility": {
+    "contrast": "Ensure text meets WCAG 2.2 AA (minimum 4.5:1). Dark theme with high contrast text.",
+    "focus": "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#09090b]",
+    "testing": "CRITICAL: All interactive and key informational elements MUST include a data-testid attribute (e.g., data-testid='upload-version-btn')."
+  },
+  "image_urls": [
+    {
+      "url": "https://images.unsplash.com/photo-1632187981988-40f3cbaeef5e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwzfHxjaW5lbWF0aWMlMjBmaWxtJTIwc2V0JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3ODk4ODQzNTl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Cinematic film set with camera setup",
+      "category": "Project Cover / Dashboard Hero"
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1612544409025-e1f6a56c1152?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxjaW5lbWF0aWMlMjBmaWxtJTIwc2V0JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3ODk4ODQzNTl8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Film crew working on a large soundstage",
+      "category": "Project Cover / Dashboard Overview"
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1614963326505-843868e1d83a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwyfHxmaWxtJTIwZWRpdG9yJTIwd29ya2luZyUyMG1vbml0b3J8ZW58MHx8fHwxNzg5ODg0MzU5fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Video editing software on monitor",
+      "category": "Empty State for Review / Shot Detail"
+    }
+  ],
+  "instructions_to_main_agent": [
+    "CRITICAL: Use .js and .jsx for all React components. Do NOT use .tsx files.",
+    "Build a production-grade, dark-mode only (or default dark) layout similar to Frame.io and Linear.",
+    "Never use generic centered layouts. Use optical alignment and grid-based left alignments for dense data.",
+    "Do not use complete transparent backgrounds for dropdowns or modals; always use solid dark backgrounds with 1px borders.",
+    "For avatars and missing images, use the provided image_urls. Do not use text placeholders.",
+    "Implement Sonner for toast notifications.",
+    "Ensure Vietnamese language strings are correctly rendered. Do not break text layout with long Vietnamese words.",
+    "Add 'data-testid' to ALL buttons, inputs, links, and actionable rows to support QA testing."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic outputs. Break the mold. Make the UI feel like an expensive, professional film tool.",
+    "Do not add universal transitions (e.g., transition: all). Add explicit transitions (e.g., transition-colors, transition-transform).",
+    "Do not center align the app container. Text alignment must follow natural reading flow (left-aligned).",
+    "Never use AI assistant Emojis. Use Lucide or Phosphor icons for professional toolography.",
+    "Use layered elements (z-index) to create depth. Utilize nested container borders.",
+    "Prioritize pre-existing Shadcn components where applicable."
+  ]
+}
