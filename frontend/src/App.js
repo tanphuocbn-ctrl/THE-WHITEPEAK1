@@ -15,7 +15,7 @@ import ProjectLayout from "@/pages/project/ProjectLayout";
 import Structure from "@/pages/project/Structure";
 import Board from "@/pages/project/Board";
 import Canvas from "@/pages/project/Canvas";
-import ScriptImport from "@/pages/project/ScriptImport";
+import Resources from "@/pages/project/Resources";import ScriptImport from "@/pages/project/ScriptImport";
 import PostProduction from "@/pages/project/PostProduction";
 import SkillLibrary from "@/pages/project/SkillLibrary";
 import Budget from "@/pages/project/Budget";
@@ -42,6 +42,8 @@ function App() {
                 <Route index element={<Structure />} />
                 <Route path="board" element={<Board />} />
                 <Route path="canvas" element={<Canvas />} />
+                <Route path="scenes/:sceneId/canvas" element={<Canvas />} />
+                <Route path="resources" element={<Resources />} />
                 <Route path="script" element={<ScriptImport />} />
                 <Route path="post" element={<PostProduction />} />
                 <Route path="skills" element={<SkillLibrary />} />

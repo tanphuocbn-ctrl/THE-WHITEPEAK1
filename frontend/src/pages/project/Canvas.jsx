@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useProject } from "./ProjectLayout";
 import api, { apiError } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -82,6 +83,8 @@ function wrapText(ctx, text, x, y, maxW, lh) {
 
 export default function Canvas() {
   const { project, projectId, myRole } = useProject();
+  const { sceneId } = useParams();
+  const sceneQ = sceneId ? `?scene_id=${sceneId}` : "";
   const { user } = useAuth();
   const canEdit = can(user, myRole, "canvas.write");
 
@@ -122,10 +125,10 @@ export default function Canvas() {
   }, [projectId]);
 
   useEffect(() => {
-    api.get(`/projects/${projectId}/canvas`).then((r) => {
+    api.get(`/projects/${projectId}/canvas${sceneQ}`).then((r) => {
       setNodes(r.data.nodes || []); setEdges(r.data.edges || []); setRev(r.data.rev || 0);
     }).finally(() => setLoading(false));
-    loadSnaps();
+    if (!sceneId) loadSnaps();
     Promise.all([
       api.get(`/projects/${projectId}/scenes`),
       api.get(`/projects/${projectId}/shots`),
@@ -524,7 +527,7 @@ export default function Canvas() {
 
   const save = async () => {
     setSaving(true);
-    try { const { data } = await api.put(`/projects/${projectId}/canvas`, { nodes, edges, rev }); setRev(data.rev); setDirty(false); toast.success("Đã lưu canvas"); }
+    try { const { data } = await api.put(`/projects/${projectId}/canvas${sceneQ}`, { nodes, edges, rev }); setRev(data.rev); setDirty(false); toast.success("Đã lưu canvas"); }
     catch (e) { toast.error(apiError(e)); } finally { setSaving(false); }
   };
   const createSnapshot = async () => {
@@ -550,8 +553,17 @@ export default function Canvas() {
     </button>
   );
 
+  const sceneObj = sceneId ? scenes.find((s) => s.id === sceneId) : null;
+
   return (
     <div className="animate-fade-up -mx-6 -my-6 lg:-mx-8 lg:-my-8">
+      {sceneId && (
+        <div className="absolute left-4 top-4 z-40 flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-sm shadow-xl backdrop-blur-xl" data-testid="scene-canvas-banner">
+          <Link to={`/projects/${projectId}/canvas`} className="inline-flex items-center gap-1 text-zinc-400 hover:text-zinc-100"><FrameIcon className="h-3.5 w-3.5" /> Canvas dự án</Link>
+          <span className="text-zinc-600">/</span>
+          <span className="font-medium text-zinc-100">{sceneObj ? `${sceneObj.code} · ${sceneObj.title}` : "Cảnh"}</span>
+        </div>
+      )}
       {connectFrom && <div className="absolute left-1/2 top-24 z-40 -translate-x-1/2 rounded-full border border-blue-500/40 bg-blue-950/70 px-3 py-1 text-xs text-blue-200 backdrop-blur" data-testid="connect-hint">Chọn node đích để nối · nhấp nền để hủy</div>}
 
       <div ref={wrap} onMouseDown={onBgMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp} onWheel={onWheel}
@@ -645,6 +657,7 @@ export default function Canvas() {
             </DropdownMenu>
           )}
           <IconBtn onClick={exportPng} title="Xuất PNG" testid="canvas-export-btn"><Download className="h-4 w-4" /></IconBtn>
+          {!sceneId && (
           <Dialog open={snapOpen} onOpenChange={(o) => { setSnapOpen(o); if (o) loadSnaps(); }}>
             <DialogTrigger asChild><IconBtn title="Snapshot" testid="canvas-snapshots-btn"><History className="h-4 w-4" /></IconBtn></DialogTrigger>
             <DialogContent className="bg-zinc-900 border-zinc-800">
@@ -666,6 +679,7 @@ export default function Canvas() {
               </div>
             </DialogContent>
           </Dialog>
+          )}
           {canEdit && (
             <>
               <div className="mx-0.5 h-6 w-px bg-zinc-800" />

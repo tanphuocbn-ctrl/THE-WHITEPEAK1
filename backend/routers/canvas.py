@@ -55,29 +55,29 @@ class SnapshotIn(BaseModel):
     name: str
 
 
-async def _get_or_create(project_id: str):
-    doc = await db.canvases.find_one({"project_id": project_id})
+async def _get_or_create(project_id: str, scene_id=None):
+    doc = await db.canvases.find_one({"project_id": project_id, "scene_id": scene_id})
     if not doc:
-        doc = {"id": new_id(), "project_id": project_id, "nodes": [], "edges": [],
+        doc = {"id": new_id(), "project_id": project_id, "scene_id": scene_id, "nodes": [], "edges": [],
                "rev": 0, "updated_at": now_iso()}
         await db.canvases.insert_one(dict(doc))
     return clean(doc)
 
 
 @router.get("/canvas")
-async def get_canvas(project_id: str, user: dict = Depends(A.get_current_user)):
+async def get_canvas(project_id: str, scene_id: str = Query(None), user: dict = Depends(A.get_current_user)):
     p = await get_project_or_404(project_id)
     rbac.require_cap(user, p, "canvas.view")
-    return await _get_or_create(project_id)
+    return await _get_or_create(project_id, scene_id)
 
 
 @router.put("/canvas")
-async def save_canvas(project_id: str, body: CanvasSave, user: dict = Depends(A.get_current_user)):
+async def save_canvas(project_id: str, body: CanvasSave, scene_id: str = Query(None), user: dict = Depends(A.get_current_user)):
     p = await get_project_or_404(project_id)
     rbac.require_cap(user, p, "canvas.write")
-    await _get_or_create(project_id)
+    await _get_or_create(project_id, scene_id)
     res = await db.canvases.find_one_and_update(
-        {"project_id": project_id, "rev": body.rev},
+        {"project_id": project_id, "scene_id": scene_id, "rev": body.rev},
         {"$set": {"nodes": [n.model_dump() for n in body.nodes],
                   "edges": [e.model_dump() for e in body.edges],
                   "updated_at": now_iso()}, "$inc": {"rev": 1}},
@@ -171,9 +171,96 @@ async def restore_snapshot(project_id: str, snap_id: str, user: dict = Depends(A
     if not snap:
         raise HTTPException(status_code=404, detail="Không tìm thấy snapshot")
     res = await db.canvases.find_one_and_update(
-        {"project_id": project_id},
+        {"project_id": project_id, "scene_id": None},
         {"$set": {"nodes": snap["nodes"], "edges": snap["edges"], "updated_at": now_iso()},
          "$inc": {"rev": 1}}, return_document=True)
     await audit(project_id, "canvas", snap_id, "restore", user,
                 after={"name": snap["name"]}, label=f"Khôi phục snapshot canvas: {snap['name']}")
+    return clean(res)
+
+
+def _res_item(r):
+    return {"media_id": r.get("media_id"), "media_name": r.get("name")} if r and r.get("media_id") else None
+
+
+@router.post("/canvas/build-scenes")
+async def build_scenes(project_id: str, user: dict = Depends(A.get_current_user)):
+    """Auto-build one moodboard Frame per scene in the project canvas + a per-scene canvas,
+    filled with the scene's background + assigned character images + design image."""
+    p = await get_project_or_404(project_id)
+    rbac.require_cap(user, p, "canvas.write")
+    scenes = await db.scenes.find({"project_id": project_id}).sort("order", 1).to_list(2000)
+    resources = await db.resources.find({"project_id": project_id}).to_list(2000)
+    rmap = {r["id"]: r for r in resources}
+
+    cur = await _get_or_create(project_id, None)
+    nodes = cur["nodes"]
+    frame_by_ref = {n.get("ref_id"): n for n in nodes if n.get("type") == "frame" and n.get("ref_id")}
+    others = [n for n in nodes if not (n.get("type") == "frame" and n.get("ref_id"))]
+
+    new_frames = []
+    cols = 2
+    for i, sc in enumerate(scenes):
+        bg = rmap.get(sc.get("background_id"))
+        chars = [rmap.get(cid) for cid in (sc.get("characters") or [])]
+        items = []
+        bi = _res_item(bg)
+        if bi:
+            items.append(bi)
+        for c in chars:
+            ci = _res_item(c)
+            if ci:
+                items.append(ci)
+        di = {"media_id": sc.get("design_media_id"), "media_name": "Thiết kế"} if sc.get("design_media_id") else None
+        if di:
+            items.append(di)
+        title = f"{sc.get('code')} · {sc.get('title')}"
+        prev = frame_by_ref.get(sc["id"])
+        if prev:
+            prev = dict(prev)
+            prev["title"] = title
+            prev["items"] = items
+            new_frames.append(prev)
+        else:
+            new_frames.append({
+                "id": new_id(), "type": "frame", "ref_id": sc["id"],
+                "x": 40 + (i % cols) * 540, "y": 40 + (i // cols) * 440,
+                "w": 500, "h": 360, "title": title, "text": sc.get("design_note") or "",
+                "color": "#3b82f6", "items": items, "locked": False,
+            })
+
+        # Build the per-scene dedicated canvas
+        snodes = []
+        if bi:
+            snodes.append({"id": new_id(), "type": "media", "x": 40, "y": 40, "w": 560, "h": 320,
+                           "title": f"Bối cảnh: {bg.get('name')}", "color": "#10b981",
+                           "media_id": bi["media_id"], "media_name": bi["media_name"]})
+        cx = 40
+        for c in chars:
+            ci = _res_item(c)
+            snodes.append({"id": new_id(), "type": "character", "x": cx, "y": 400, "w": 190, "h": 230,
+                           "title": c.get("name"), "text": c.get("description") or "", "color": "#f59e0b",
+                           **({"media_id": ci["media_id"], "media_name": ci["media_name"]} if ci else {})})
+            cx += 210
+        if sc.get("design_media_id"):
+            snodes.append({"id": new_id(), "type": "media", "x": 640, "y": 40, "w": 320, "h": 220,
+                           "title": "Scene design", "color": "#ec4899",
+                           "media_id": sc["design_media_id"], "media_name": "Thiết kế"})
+        if sc.get("design_note"):
+            snodes.append({"id": new_id(), "type": "comment", "x": 640, "y": 290, "w": 320, "h": 140,
+                           "title": "Ghi chú thiết kế", "text": sc.get("design_note"), "color": "#eab308"})
+        sdoc = await db.canvases.find_one({"project_id": project_id, "scene_id": sc["id"]})
+        if sdoc:
+            await db.canvases.update_one({"project_id": project_id, "scene_id": sc["id"]},
+                                         {"$set": {"nodes": snodes, "updated_at": now_iso()}, "$inc": {"rev": 1}})
+        else:
+            await db.canvases.insert_one({"id": new_id(), "project_id": project_id, "scene_id": sc["id"],
+                                          "nodes": snodes, "edges": [], "rev": 0, "updated_at": now_iso()})
+
+    merged = others + new_frames
+    res = await db.canvases.find_one_and_update(
+        {"project_id": project_id, "scene_id": None},
+        {"$set": {"nodes": merged, "updated_at": now_iso()}, "$inc": {"rev": 1}}, return_document=True)
+    await audit(project_id, "canvas", project_id, "build", user,
+                after={"frames": len(new_frames)}, label=f"Dựng canvas theo scene ({len(new_frames)} khung)")
     return clean(res)

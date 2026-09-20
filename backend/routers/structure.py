@@ -99,6 +99,10 @@ class SceneUpdate(BaseModel):
     time_of_day: Optional[str] = None
     script_content: Optional[str] = None
     order: Optional[int] = None
+    characters: Optional[list] = None
+    background_id: Optional[str] = None
+    design_media_id: Optional[str] = None
+    design_note: Optional[str] = None
     rev: int
 
 

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import api from "@/lib/api";
-import { Loader2, GitBranch, KanbanSquare, FileText, Users, History, Frame, Clapperboard, BookOpen, Wallet } from "lucide-react";
+import { Loader2, GitBranch, KanbanSquare, FileText, Users, History, Frame, Clapperboard, BookOpen, Wallet, Boxes } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ProjectContext = createContext(null);
@@ -39,6 +39,7 @@ export default function ProjectLayout() {
             <NavLink to={`/projects/${id}`} end className={tab} data-testid="tab-structure"><GitBranch className="h-4 w-4" /> Cấu trúc</NavLink>
             <NavLink to={`/projects/${id}/board`} className={tab} data-testid="tab-board"><KanbanSquare className="h-4 w-4" /> Phân công</NavLink>
             <NavLink to={`/projects/${id}/canvas`} className={tab} data-testid="tab-canvas"><Frame className="h-4 w-4" /> Canvas</NavLink>
+            <NavLink to={`/projects/${id}/resources`} className={tab} data-testid="tab-resources"><Boxes className="h-4 w-4" /> Thư viện</NavLink>
             <NavLink to={`/projects/${id}/script`} className={tab} data-testid="tab-script"><FileText className="h-4 w-4" /> Kịch bản</NavLink>
             <NavLink to={`/projects/${id}/post`} className={tab} data-testid="tab-post"><Clapperboard className="h-4 w-4" /> Hậu kỳ</NavLink>
             <NavLink to={`/projects/${id}/skills`} className={tab} data-testid="tab-skills"><BookOpen className="h-4 w-4" /> Skill</NavLink>
