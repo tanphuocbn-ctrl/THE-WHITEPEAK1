@@ -258,20 +258,23 @@ export default function Canvas() {
 
   const onMouseMove = (e) => {
     if (resize.current) {
-      const dw = (e.clientX - resize.current.startX) / view.scale;
-      const dh = (e.clientY - resize.current.startY) / view.scale;
-      const mn = MIN_SIZE[resize.current.type] || { w: 140, h: 80 };
-      setNodes((ns) => ns.map((n) => (n.id === resize.current.id
-        ? { ...n, w: Math.max(mn.w, resize.current.ow + dw), h: Math.max(mn.h, resize.current.oh + dh) } : n)));
+      const { id, type, startX, startY, ow, oh } = resize.current;
+      const dw = (e.clientX - startX) / view.scale;
+      const dh = (e.clientY - startY) / view.scale;
+      const mn = MIN_SIZE[type] || { w: 140, h: 80 };
+      setNodes((ns) => ns.map((n) => (n.id === id
+        ? { ...n, w: Math.max(mn.w, ow + dw), h: Math.max(mn.h, oh + dh) } : n)));
       return;
     }
     if (drag.current) {
-      const dx = (e.clientX - drag.current.startX) / view.scale;
-      const dy = (e.clientY - drag.current.startY) / view.scale;
-      if (Math.abs(dx) + Math.abs(dy) > 1) drag.current.moved = true;
-      setNodes((ns) => ns.map((n) => (n.id === drag.current.id ? { ...n, x: drag.current.ox + dx, y: drag.current.oy + dy } : n)));
+      const d = drag.current;
+      const dx = (e.clientX - d.startX) / view.scale;
+      const dy = (e.clientY - d.startY) / view.scale;
+      if (Math.abs(dx) + Math.abs(dy) > 1) d.moved = true;
+      setNodes((ns) => ns.map((n) => (n.id === d.id ? { ...n, x: d.ox + dx, y: d.oy + dy } : n)));
     } else if (pan.current) {
-      setView((v) => ({ ...v, tx: pan.current.tx + (e.clientX - pan.current.startX), ty: pan.current.ty + (e.clientY - pan.current.startY) }));
+      const p = pan.current;
+      setView((v) => ({ ...v, tx: p.tx + (e.clientX - p.startX), ty: p.ty + (e.clientY - p.startY) }));
     }
   };
   const onMouseUp = () => {
