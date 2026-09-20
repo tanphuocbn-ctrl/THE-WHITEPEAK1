@@ -147,6 +147,13 @@ async def confirm_staging(project_id: str, staging_id: str, body: ConfirmIn, use
     # Additive only: never overwrite existing scenes/shots/assignments/reviews
     existing = await db.scenes.find({"project_id": project_id}).to_list(5000)
     existing_titles = {e.get("title", "").strip() for e in existing}
+    # Only new (non-duplicate) scenes get imported — never overwrite existing
+    to_create = [s for s in st["parsed_scenes"]
+                 if (body.selected_codes is None or s["code"] in body.selected_codes)
+                 and s["title"].strip() not in existing_titles]
+    if not to_create:
+        await db.script_stagings.update_one({"id": staging_id}, {"$set": {"status": "confirmed"}})
+        return {"created_scenes": 0, "sequence_id": None}
     seq = {"id": new_id(), "project_id": project_id, "code": "SEQ-IMP",
            "title": body.sequence_title or "Kịch bản nhập",
            "order": await db.sequences.count_documents({"project_id": project_id}),
@@ -154,11 +161,7 @@ async def confirm_staging(project_id: str, staging_id: str, body: ConfirmIn, use
     await db.sequences.insert_one(dict(seq))
     created = 0
     order = 0
-    for s in st["parsed_scenes"]:
-        if body.selected_codes is not None and s["code"] not in body.selected_codes:
-            continue
-        if s["title"].strip() in existing_titles:
-            continue  # do not overwrite existing scene
+    for s in to_create:
         order += 1
         scene = {"id": new_id(), "project_id": project_id, "sequence_id": seq["id"],
                  "code": s["code"], "title": s["title"], "description": s.get("description", ""),

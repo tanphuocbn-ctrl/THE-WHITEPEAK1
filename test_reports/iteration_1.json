@@ -1,0 +1,35 @@
+{
+  "summary": "Phase 1 backend + frontend testing complete. 27/27 pytest backend tests passed covering auth (login, register, wrong-password, logout, forgot-password generic response, reset-password token flow), RBAC (member/reviewer forbidden on structure/assign), project CRUD, structure CRUD with optimistic concurrency (stale rev → 409), assignments with member validation + board grouping + mine filter, chunked resumable version upload → complete → immutable version_number, download via Bearer and ?auth=, review pass/fail flow with returns list, stale-version force=true guard (409 without force), script manual import → diff (added vs exists) → confirm (additive only, double-confirm 409), audit list + restore of update reverts before-state, RBAC forbids audit for member, dashboard aggregation. Frontend E2E on Chromium: login → dashboard stats (Dự án 2 / Tổng shot 6 / Chờ duyệt 1) → open DEMO-01 → Structure (4 sequences, scenes, shots) → shot sheet with tab-versions/tab-review/tab-assign + upload-version-btn + save-assign-btn → Board → Script manual import + confirm → Members → Audit timeline with restore buttons all working.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "ShotSheet (Radix Dialog inside Sheet)", "issues": ["Console warning: `DialogContent` requires a `DialogTitle` for accessibility (screen readers). Add a VisuallyHidden DialogTitle in ShotSheet.jsx or the modal dialogs used inside the sheet."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "(Minor A11y) Add a hidden DialogTitle (Radix VisuallyHidden) in the Dialog components that lack one — reproducible when opening the shot sheet / new-scene / new-shot dialogs."
+  ],
+  "critical_code_review_comments": [
+    "server.py CORS uses allow_origins=[FRONTEND_URL, 'http://localhost:3000'] with allow_credentials=True — good. CORS_ORIGINS='*' in .env is unused; consider deleting to avoid confusion.",
+    "auth.py check_lockout does not clear on password reset via IP-scoped identifier — but /auth/reset-password does delete login_attempts by email, matching playbook. OK.",
+    "download_version accepts token via ?auth= query string, which is convenient for <video> tags but logs the JWT in access logs. Consider signed short-lived download URLs or a per-version download token in a later phase.",
+    "versions.py stores uploads on local disk (/app/.uploads) before pushing to storage — good for chunking; ensure cleanup on failed complete (currently only cleaned on success).",
+    "structure.py update_shot's ShotUpdate does not include status field, but /shots/{id}/status endpoint exists — good separation. However clients need to know which path to use.",
+    "scripts.py confirm always creates a new sequence 'SEQ-IMP' even if all scenes are duplicates and 0 created — leaves an empty sequence; consider skipping seq creation when created==0.",
+    "audit.py restore for 'update' does not increment rev via $inc; it sets rev = before.rev+1 which can conflict if concurrent updates happened — low priority.",
+    "reviewer role has 'review.decide' but not 'version.upload' — correct. Member role has version.upload but not review.decide — correct per RBAC matrix.",
+    "auth_routes register endpoint returns 200 (should ideally be 201 for resource creation) — minor REST style.",
+    "No rate limit on /auth/register; only /auth/login has brute-force lockout. Consider adding registration throttling."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py", "/app/backend/tests/__init__.py"],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "100% (all critical flows verified)"},
+  "test_credentials": "Admin tanphuoc.bn@gmail.com / Studio@2026; demo users pm/lead/member/reviewer/editor/secretary@studio.vn all Studio@2026. Seeded DEMO-01 with SEQ-01 → S1/S2 → SH-010/020/030.",
+  "seed_data_creation": "Tests create TEST-<uuid> projects (as secretary), extra sequences/scenes/shots inside DEMO-01, and register throwaway test_<uuid>@studio.vn + reset_<uuid>@studio.vn users. All namespaced with TEST_/random uuids so they don't collide with seed data.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend regression suite at /app/backend/tests/backend_test.py runs in ~8s and covers full Phase 1. Uses REACT_APP_BACKEND_URL + MONGO_URL + DB_NAME env. Dashboard uses data-testid=`dash-project-<CODE>` (not project-card-<CODE>); the Projects list page uses project-card-<CODE>. Both work. Reset-password test seeds token directly into Mongo because the preview URL isn't localhost so the email link isn't logged.",
+  "rca of the issue": "No blocking issues found."
+}

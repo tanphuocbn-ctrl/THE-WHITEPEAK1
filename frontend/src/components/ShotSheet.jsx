@@ -45,7 +45,10 @@ export default function ShotSheet({ projectId, shotId, myRole, members, onClose,
     <Sheet open onOpenChange={(o) => !o && onClose()}>
       <SheetContent side="right" className="w-full sm:max-w-xl bg-[#111113] border-zinc-800 p-0 overflow-y-auto thin-scroll" data-testid="shot-sheet">
         {loading || !shot ? (
-          <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>
+          <>
+            <SheetHeader className="sr-only"><SheetTitle>Chi tiết shot</SheetTitle></SheetHeader>
+            <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>
+          </>
         ) : (
           <>
             <SheetHeader className="border-b border-zinc-800/80 p-5">
