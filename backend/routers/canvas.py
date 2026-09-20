@@ -26,12 +26,14 @@ class Node(BaseModel):
     ref_id: Optional[str] = None
     media_id: Optional[str] = None
     media_name: Optional[str] = None
+    locked: Optional[bool] = False
 
 
 class Edge(BaseModel):
     id: str
     source: str
     target: str
+    label: Optional[str] = ""
 
 
 class CanvasSave(BaseModel):

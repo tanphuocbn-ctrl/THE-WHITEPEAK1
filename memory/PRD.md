@@ -51,6 +51,17 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - [x] Xuất PNG kèm tiêu đề: dải header trên ảnh PNG ghi mã+tên dự án, ngày xuất, số node.
 - Verified: frontend E2E (arrange tree layout đúng nhóm, export toast).
 
+## Implemented (2026-06, iter 5 — Canvas polish + Phase 3 khởi động)
+- [x] Ghi chú trên cạnh nối: chip nhãn tại trung điểm cạnh, click sửa inline, xóa cạnh; nhãn vẽ cả trong PNG.
+- [x] Thu nhỏ toàn cảnh: nút "fit" tự tính bbox và canh giữa bảng vừa màn hình.
+- [x] Khóa vị trí node: nút khóa/mở trên node; node khóa không kéo được và không bị auto-layout dời (viền hổ phách + icon).
+- [x] PHASE 3 Hậu kỳ theo Sequence: tab "Hậu kỳ" — task hậu kỳ (todo/in_progress/review/done, optimistic concurrency), manifest nhận **file dựng ngoại nhập (URL)** + **tải bản xuất cuối lên** (không encode) và **tải xuống** (cookie auth). RBAC post.view/post.write.
+- Backend: routers/post.py (tasks + manifest external/upload/download), rbac caps post.*, canvas Edge.label + Node.locked.
+- Verified: curl (task, external, upload+download, edge label/lock persist) + frontend E2E (Hậu kỳ tab, arrange/fit/lock/edge label).
+
+## Phase 3 còn lại (backlog)
+- Nhân sự/lịch, ngân sách/chi phí, dashboard & báo cáo tuần; Thư viện Skill (hướng dẫn/quy trình/prompt) có version.
+
 ## Backlog
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
 - P1: Download token instead of ?auth= JWT in URL; temp-file cleanup on failed upload.
