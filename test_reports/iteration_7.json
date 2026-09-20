@@ -1,0 +1,23 @@
+{
+  "summary": "Verified Canvas.jsx null-ref crash fix on DEMO-01 project. Executed heavy stress: 8 rapid drag/flick cycles + abrupt release outside-node per node across 5 nodes (40 drag sessions), 6 rapid resize cycles on the resize-handle, 8 rapid pan cycles on empty canvas background. Registered page.on('pageerror') and console error listeners. Regression: added scene node (add-node-scene), properties panel opened, saved (button showed 'Đã lưu'), reloaded page — canvas re-hydrated cleanly and node count increased from 5 to 6 (persistence confirmed).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Fix is correct: onMouseMove now captures `const d = drag.current` / destructures `resize.current` / `const p = pan.current` before the setNodes/setView functional updater, eliminating the null-ref race with onMouseUp.",
+    "Canvas.jsx is large (~840+ lines); consider splitting node-editor panel, resize/drag/pan handlers, and toolbar into separate modules for maintainability."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a", "frontend": "100%"},
+  "test_credentials": "tanphuoc.bn@gmail.com / Studio@2026 (super_admin)",
+  "seed_data_creation": "Added one 'Scene mới' node to DEMO-01 canvas via add-node-scene, saved. Post-reload nodes: 6 (was 5).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Draggable node selector is `[data-testid^=\"node-\"]` where testid == `node-<nodeId>`; filter out non-node testids like node-editor, node-title-input, node-color-*, node-media-*, node-lock-btn, node-delete-btn, node-media-input, node-text-input. Resize handle: [data-testid='resize-handle']. Canvas board: [data-testid='canvas-board']. Save btn: [data-testid='canvas-save-btn']. Login page fills email/password and redirects to '/'.",
+  "rca of the issue": "React batches functional state updaters; setNodes(prev => prev.map(n => n.id === drag.current.id ...)) queued during rapid mousemove could execute after onMouseUp had already set drag.current=null, throwing 'Cannot read properties of null (reading id)'. Fix captures ref values into locals before enqueuing the updater. Verified: after ~54 stress interactions, 0 pageerrors and 0 console errors."
+}
