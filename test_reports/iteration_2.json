@@ -1,0 +1,30 @@
+{
+  "summary": "Phase 2 backend + frontend E2E testing complete. 14/14 new backend tests passed (AI script import via Gemini + default provider + invalid provider 400 + member 403; script diff selected_codes creates only chosen scene + idempotent 409 on re-confirm; additive-only skips existing titles; canvas GET auto-creates empty board; PUT increments rev and persists; PUT with stale rev → 409; reviewer canvas.view GET ok / PUT 403; member canvas.write allowed; snapshot create/list/restore with node_count and payload excluded from list; version download via httpOnly access_token cookie works and unauthenticated → 401). Phase 1 regression re-ran (TestVersions all pass with updated cookie assertion). Frontend E2E on Chromium: admin login → DEMO-01 → tab-canvas add scene/character/shot nodes (9 on board) → node-editor with title+text inputs → canvas-save (toast) → canvas-snapshots dialog → snap-name-input + snap-create-btn lists snapshot → canvas-undo/canvas-redo enabled and clicked → tab-script manual textarea + use-ai-checkbox toggles Gemini provider → script-manual-submit calls AI → 2 diff-check-* checkboxes render → uncheck one → script-confirm-btn shows toast 'tạo 1 scene mới' (confirms only checked). Review: opened shot SH-010 sheet, tab-review renders review form (timecode input, add-timecode, textarea, Đạt/Không đạt buttons) — no crash; review-video element not rendered because latest version is application/octet-stream (test payload, not mp4), which is acceptable per task spec.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_phase2.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_phase2.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "scripts.py confirm_staging still always creates a new empty sequence 'SEQ-IMP' when there is at least one to_create; carry-over note from iteration_1: if all scenes are duplicates the code correctly returns early with created_scenes=0 without creating an empty sequence (verified). OK.",
+    "canvas.py restore_snapshot returns the full canvas doc including nodes/edges (correct, contrast with list_snapshots which strips them). Good.",
+    "canvas.py save_canvas: rev mismatch check via find_one_and_update({project_id, rev}) is correct optimistic concurrency; snapshot restore uses $inc rev — this could invalidate a client's in-flight PUT (409). Documented behavior is fine.",
+    "versions.py download_version now reads cookie first, then Bearer, then ?auth — good. Preview-URL cookies are httpOnly + SameSite, so <video src=?auth=..> path remains available.",
+    "scripts.py ai_parse_script: prompt asks for JSON array; _extract_json strips ``` fences and trims to first [ ... last ] — reasonable but if model returns single-object it will fail. Consider defensive fallback (wrap dict in list).",
+    "AI ai_parse_script does not enforce max input length beyond raw_text[:120000] slice — no rate limit / cost cap. Consider quota per-project."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phase2.py (new)",
+    "/app/backend/tests/backend_test.py (fixed stale cookie assertion in TestVersions.test_chunked_upload_and_review)"
+  ],
+  "success_rate": {"backend": "100% (14/14 phase2, phase1 regression still 27/27)", "frontend": "100% (canvas + script AI + review flows verified)"},
+  "test_credentials": "Admin tanphuoc.bn@gmail.com / Studio@2026; member@studio.vn / Studio@2026; reviewer@studio.vn / Studio@2026 — all as documented.",
+  "seed_data_creation": "Tests create ephemeral canvas snapshots (TEST_snap_*), script stagings and scenes inside DEMO-01. Cleanup not automated but namespaced.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Phase 2 regression at /app/backend/tests/test_phase2.py runs in ~22s (Gemini AI call ~20s). Uses REACT_APP_BACKEND_URL + MONGO_URL + DB_NAME env. Canvas write is member-allowed; canvas.view only for reviewer. Download endpoint now supports cookie/Bearer/?auth. Frontend testids all match spec: tab-canvas/tab-script/tab-review, add-node-*, node-editor, canvas-save-btn/undo/redo/snapshots-btn, snap-name-input/snap-create-btn/snap-restore-<id>, use-ai-checkbox, ai-provider-select, script-manual-submit, diff-check-<code>, script-confirm-btn. Review video (review-video, tc-capture-0) only shows when a version's content_type starts with video/. To fully exercise these, main agent could upload a tiny mp4 fixture in seeds.",
+  "rca of the issue": "No blocking issues found."
+}

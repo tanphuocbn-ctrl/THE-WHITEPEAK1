@@ -309,11 +309,16 @@ class TestVersions:
         assert s2["status"] == "review"
         assert s2["latest_version_id"] == version_id
 
-        # Download with Bearer token — need access token; use cookie session download
-        r_dl = admin.get(f"{BASE}/projects/{demo_project_id}/versions/{version_id}/download",
-                         cookies=None)  # will fail as no Bearer/auth
-        # Endpoint requires Bearer/query - not cookie. So must fail 401.
-        assert r_dl.status_code == 401
+        # Phase 2 update: download now also accepts httpOnly access_token cookie.
+        # With the admin session (cookie present) → should succeed.
+        r_dl_cookie = admin.get(f"{BASE}/projects/{demo_project_id}/versions/{version_id}/download",
+                                timeout=30)
+        assert r_dl_cookie.status_code == 200
+        assert r_dl_cookie.content == payload
+        # Unauthenticated → 401
+        r_dl_noauth = requests.get(
+            f"{BASE}/projects/{demo_project_id}/versions/{version_id}/download", timeout=30)
+        assert r_dl_noauth.status_code == 401
 
         # Extract access token from cookies
         access_token = admin.cookies.get("access_token")

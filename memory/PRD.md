@@ -32,6 +32,13 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - [x] Seed demo data (DEMO-01, 6 role users)
 - Verified: testing agent 27/27 backend, all frontend flows.
 
+## Implemented (2026-06, iter 2 — 4 tính năng mở rộng)
+- [x] Video Player khi duyệt: trình phát video trong panel duyệt, click timecode để tua, nút "lấy thời điểm hiện tại", tua từ lịch sử phản hồi (ShotSheet ReviewTab). Download endpoint nay chấp nhận cookie auth.
+- [x] Chọn scene khi import: bước diff có checkbox cho từng cảnh mới, confirm chỉ tạo cảnh đã chọn (additive, không ghi đè).
+- [x] AI import kịch bản: adapter đa provider qua Emergent Universal Key — mặc định Gemini 3.1 Pro (openai/anthropic tuỳ chọn), ghi provider+model+chi phí, fallback nhập tay khi lỗi.
+- [x] Canvas single-user (Phase 2): bảng vô hạn pan/zoom, node scene/shot/nhân vật/bối cảnh/media/ghi chú, kéo thả, nối cạnh, undo/redo, sửa inline + màu, lưu (optimistic concurrency rev), snapshot lưu/khôi phục.
+- Verified: testing agent 14/14 backend Phase 2, frontend Canvas/Script-AI/Review đạt.
+
 ## Backlog
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
 - P1: Download token instead of ?auth= JWT in URL; temp-file cleanup on failed upload.

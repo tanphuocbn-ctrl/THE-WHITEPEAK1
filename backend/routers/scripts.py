@@ -90,10 +90,19 @@ def _extract_json(text: str):
     if text.startswith("```"):
         text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
         text = re.sub(r"\n?```$", "", text).strip()
-    start = text.find("[")
-    end = text.rfind("]")
-    if start != -1 and end != -1:
-        text = text[start:end + 1]
+    # Prefer array; fall back to a single object or an object wrapping a list
+    start, end = text.find("["), text.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        return json.loads(text[start:end + 1])
+    ostart, oend = text.find("{"), text.rfind("}")
+    if ostart != -1 and oend != -1:
+        obj = json.loads(text[ostart:oend + 1])
+        if isinstance(obj, dict):
+            for v in obj.values():
+                if isinstance(v, list):
+                    return v
+            return [obj]
+        return obj
     return json.loads(text)
 
 
