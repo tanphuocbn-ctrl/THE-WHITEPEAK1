@@ -76,7 +76,13 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - [x] Báo cáo tuần (studio-wide): trang "/reports" — version nộp/duyệt Đạt/trả hàng/task HK xong trong 7 ngày, phân bố trạng thái shot, bảng theo dự án (tiến độ, chờ duyệt, task HK mở, ngân sách/over). Endpoint /reports/weekly.
 - Verified: curl (skill v2, budget over=True, weekly aggregate) + frontend E2E (Reports page render, budget over-warning).
 
-## Backlog
+## Implemented (2026-06, iter 8 — Canvas redesign chuyên nghiệp kiểu Figma)
+- [x] Redesign toàn bộ giao diện Canvas theo blueprint design_agent: bảng full-height nền tối #09090b lưới chấm, thanh công cụ nổi kính mờ (glassmorphism) — thanh thêm node ở giữa-dưới, cụm điều khiển (undo/redo/zoom/fit/arrange/PNG/snapshot/lưu) ở góc trên-phải, bảng thuộc tính trượt bên phải (w-80).
+- [x] Node kiểu mới: **Khung/Frame moodboard** (container nét đứt màu, gom nhiều ảnh dạng lưới 3 cột — giống Figma trong ảnh mẫu người dùng), Ảnh (media edge-to-edge object-cover + scrim tiêu đề), Nhân vật/Bối cảnh (thẻ có thumbnail 4:3), Ghi chú (sticky vàng), Scene/Shot (thẻ + badge "dữ liệu thật").
+- [x] Sửa các lỗi chức năng người dùng nêu (a-e): kéo/chọn node mượt (bỏ ghi undo khi không di chuyển), nối cạnh bezier + nhãn, zoom/pan/fit mượt, ảnh hiển thị đúng khung không méo, upload nhiều ảnh vào Frame, lưu + snapshot khôi phục giữ nguyên cả ảnh trong Frame.
+- [x] Backend canvas Node model dùng ConfigDict(extra="allow") + field `items` (MediaItem) để lưu/khôi phục moodboard bền vững.
+- [x] Fix bug CRITICAL: cụm điều khiển góc phải tự dịch trái (right:21rem) khi mở bảng thuộc tính để không bị che.
+- Verified: testing agent iter 4 (90%, phát hiện overlap) + iter 5 retest 100% (fix overlap, frame moodboard upload/tiling/persistence, save/snapshot, zoom/fit đều đạt).
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
 - P1: Download token instead of ?auth= JWT in URL; temp-file cleanup on failed upload.
 - P2 (Phase 2): Canvas single-user infinite board; shared project resource library; AI/OCR multi-provider script import (OpenAI/Gemini/Claude adapter).

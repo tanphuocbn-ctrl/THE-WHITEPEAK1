@@ -1,0 +1,24 @@
+{
+  "summary": "Targeted retest of iteration_4 CRITICAL overlap bug on Canvas (/projects/DEMO-01/canvas). Regression fix VERIFIED: top-right cluster wrapper now applies style={right: selNode && canEdit ? '21rem' : '1rem'} with transition-[right]. With NO node selected, canvas-save-btn sits at x=1808 (right:1rem). After selecting a node the whole cluster shifts to x=1503 (~305px ≈ 21rem to the left of the node-editor panel). elementFromPoint at each of the 9 cluster button centers returns the button itself (match=True) while the node-editor panel is open: canvas-save-btn, canvas-snapshots-btn, canvas-export-btn, canvas-arrange-btn, canvas-fit-btn, canvas-zoom-in, canvas-zoom-out, canvas-undo, canvas-redo. Real clicks confirmed: Save 'Lưu' → 'Đã lưu' with toast 'Đã lưu canvas'; Fit reset zoom (100% → 140%); Zoom-in advanced to 161%. After Escape deselect the cluster returns to x=1808 (right:1rem). Frame moodboard from iteration_4 is intact — the persisted 'Khung mới' frame still renders both image tiles (red + green) on reload. No console errors observed.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Canvas cluster", "issues": ["When Save is disabled (not dirty) elementFromPoint returns canvas-board instead of canvas-save-btn — expected artefact of Radix Button disabled=>pointer-events:none. Not a regression, but if you want the button to remain hit-testable even when disabled (e.g., for tooltip), remove pointer-events:none from the disabled state."]}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Canvas.jsx L529-530 fix is clean: transition-[right] with inline style={ right: selNode && canEdit ? '21rem' : '1rem' } — animates smoothly. Consider extracting the 21rem magic number to a const matching the panel width (w-80 = 20rem + 1rem gap) to keep them in sync if the panel is ever resized."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped by request)", "frontend": "100% for the targeted regression retest"},
+  "test_credentials": "Admin: tanphuoc.bn@gmail.com / Studio@2026 (super_admin, pm of DEMO-01). httpOnly cookie auth.",
+  "seed_data_creation": "None new. Left DEMO-01 canvas with pre-existing 'Khung mới' frame (2 image tiles) + 2 scene nodes. Zoom persisted at 161%.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Regression fix for the panel/cluster overlap on Canvas (iteration_4 CRITICAL) is verified. All top-right controls remain clickable when node-editor panel is open. Frame moodboard persistence still works. Canvas is safe to ship on this axis.",
+  "rca of the issue": "N/A — bug is fixed. RCA in iteration_4.json still stands: previously both cluster and node-editor were absolute+z-40 inside the same wrap with node-editor later in JSX, so panel won hit-testing. Fix shifts the cluster right offset via inline style based on selNode && canEdit."
+}
