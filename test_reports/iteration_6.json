@@ -1,0 +1,24 @@
+{
+  "summary": "Frontend-only E2E test of the 4 new Canvas enhancements on DEMO-01 (/projects/154dbb84-.../canvas). All four features PASSED, plus save+reload persistence and top-right cluster regression. Feat 2 KHUNG TỪ SCENE: picker-tab-scenes shows 11 'Khung' buttons (pick-scene-frame-<code>); clicking S1 creates a new frame titled 'S1 · NỘI. QUÁN CÀ PHÊ - NGÀY' with toast 'Đã tạo khung moodboard cho S1'; second click on same scene surfaces 'Đã có khung cho scene này'. Feat 4 ẢNH BÌA: character node shows exactly 6 cover-suggestion thumbnails, one-click adds a node-media-<id> img (fetch→upload or media_url CORS fallback); setting node also shows 6 (different) suggestions and applies successfully. Feat 3 ĐỔI CỠ NODE: selecting a frame reveals resize-handle at bottom-right; dragging enlarged frame from 480x340→700x510 (Δ 220x170). Media node (add-node-media) resized 240x170→430x310. Locking the node (node-lock-btn) removes the resize-handle from DOM; unlocking restores it. Feat 1 KÉO ẢNH VÀO KHUNG: verified via addFrameImages path — with frame selected, setting a file on [data-testid=frame-file-input] added the image as a NEW frame-tile-<id>-<i> in the frame's grid (2→3 tiles) and did NOT create any loose node-media (loose count stayed 0). onDrop code inspected in Canvas.jsx L355-378: when dropFrameId is set (drop coord inside frame), it calls addFrameImages(targetFrame, files); otherwise creates loose media nodes — same code path as file input, so drop-into-frame behavior is code-verified. Persistence: after canvas-save-btn ('Đã lưu') and page reload, frame width=700 height=510 tiles=3 all persisted (backend Node model uses ConfigDict(extra='allow') to keep items/w/h/ref_id/media_url). Top-right cluster (save/fit/zoom/arrange) remains clickable while node-editor is open (previously verified iteration_5, no regression). No runtime console errors on canvas.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Canvas.jsx is 943 lines — approaching the 700-line guideline; consider splitting RegularNode/FrameNode/ResizeHandle and the picker Dialog into separate files under /pages/project/canvas/.",
+    "applyCover uses fetch(url) then upload; the CORS fallback silently persists an external media_url which relies on the remote host staying alive — consider adding a server-side proxy endpoint POST /projects/:id/canvas/media/from-url to make covers durable.",
+    "onDragLeave only clears state when e.target === wrap.current — fast pointer moves over child nodes can leave a stale drop overlay. Consider using a leave counter or checking relatedTarget.",
+    "resize.current uses el.offsetWidth as the starting size; if the node hasn't been rendered with an explicit width prior to first resize, MIN_SIZE + first drag delta is fine, but for accessibility a keyboard resize affordance would be nice."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped)", "frontend": "100% (4/4 features + persistence + regression)"},
+  "test_credentials": "Admin tanphuoc.bn@gmail.com / Studio@2026 — httpOnly cookie set on /login POST; post-login URL is '/', not '/projects' (dashboard). Adjust any wait_for_url patterns accordingly.",
+  "seed_data_creation": "Left on DEMO-01 canvas: (1) 'Khung mới' frame with 3 image tiles (red, green, black-1x1), size 700x510; (2) 'S1 · NỘI. QUÁN CÀ PHÊ - NGÀY' scene-linked frame; (3) 'Scene mới' scene node; (4) an unlocked 'Ảnh mới' media node with no image. Saved.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 4 canvas enhancements ship-ready. When re-testing, note: (a) arrange-grid DropdownMenuItem sometimes needs an explicit wait_for_selector after opening canvas-arrange-btn; (b) after login, wait on canvas-board selector rather than URL pattern; (c) covers can hit CORS and fall back to media_url — both paths increment node-media-<id> img count in DOM so the assertion 'imgs_after > imgs_before' is stable; (d) DEMO-01 project has 11 scenes exposed in picker (not 2 as in review_request note)."
+}

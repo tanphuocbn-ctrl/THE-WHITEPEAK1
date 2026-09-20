@@ -83,6 +83,13 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - [x] Backend canvas Node model dùng ConfigDict(extra="allow") + field `items` (MediaItem) để lưu/khôi phục moodboard bền vững.
 - [x] Fix bug CRITICAL: cụm điều khiển góc phải tự dịch trái (right:21rem) khi mở bảng thuộc tính để không bị che.
 - Verified: testing agent iter 4 (90%, phát hiện overlap) + iter 5 retest 100% (fix overlap, frame moodboard upload/tiling/persistence, save/snapshot, zoom/fit đều đạt).
+
+## Implemented (2026-06, iter 9 — Canvas nâng cao lần 2)
+- [x] Kéo ảnh vào Khung: thả file ảnh lên vùng một Frame → ảnh vào thẳng lưới khung đó (highlight hồng khi kéo tới), không tạo node rời; thả ngoài khung vẫn tạo node Ảnh.
+- [x] Khung từ Scene: "Từ dự án" > tab Scenes, mỗi scene có nút "Khung" tạo nhanh Frame moodboard gắn ref scene (tránh trùng).
+- [x] Đổi cỡ node: tay cầm góc dưới-phải trên Frame & node Ảnh khi chọn (min frame 300x200, ảnh 150x110); node khóa ẩn tay cầm; w/h lưu bền.
+- [x] Ảnh bìa nhân vật/bối cảnh: bảng thuộc tính có "Ảnh gợi ý" (6 chân dung / 6 bối cảnh điện ảnh) — bấm gắn nhanh (fetch→upload storage, fallback media_url nếu CORS); PNG export dùng media_id||media_url.
+- Verified: testing agent iter 6 — 4/4 tính năng + lưu/tải lại + không regression (100%).
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
 - P1: Download token instead of ?auth= JWT in URL; temp-file cleanup on failed upload.
 - P2 (Phase 2): Canvas single-user infinite board; shared project resource library; AI/OCR multi-provider script import (OpenAI/Gemini/Claude adapter).
