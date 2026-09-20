@@ -35,6 +35,26 @@ const DEFAULT_SIZE = {
   frame: { w: 480, h: 340 }, scene: { w: 210, h: 96 }, shot: { w: 210, h: 96 },
   character: { w: 190, h: 230 }, setting: { w: 190, h: 230 }, media: { w: 240, h: 170 }, comment: { w: 210, h: 120 },
 };
+const MIN_SIZE = { frame: { w: 300, h: 200 }, media: { w: 150, h: 110 } };
+
+const SUGGESTED_COVERS = {
+  character: [
+    "https://images.unsplash.com/photo-1563170446-9c3c0622d8a9?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+    "https://images.unsplash.com/photo-1532170579297-281918c8ae72?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+    "https://images.pexels.com/photos/29433729/pexels-photo-29433729.png?auto=compress&cs=tinysrgb&w=400",
+    "https://images.pexels.com/photos/9067815/pexels-photo-9067815.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.unsplash.com/photo-1568038479111-87bf80659645?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+  ],
+  setting: [
+    "https://images.unsplash.com/photo-1760795896777-ab0dfa22b259?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+    "https://images.unsplash.com/photo-1785961852892-ec7cb21e5db4?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+    "https://images.pexels.com/photos/30397430/pexels-photo-30397430.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.unsplash.com/photo-1759517268149-c113637c3800?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+    "https://images.pexels.com/photos/1412218/pexels-photo-1412218.jpeg?auto=compress&cs=tinysrgb&w=400",
+    "https://images.unsplash.com/photo-1776095753569-022583a4838e?crop=entropy&cs=srgb&fm=jpg&q=85&w=400",
+  ],
+};
 
 let idc = 0;
 const uid = () => `n${Date.now()}${idc++}`;
@@ -83,8 +103,10 @@ export default function Canvas() {
   const [openShot, setOpenShot] = useState(null);
   const [mediaUrls, setMediaUrls] = useState({});
   const [dropActive, setDropActive] = useState(false);
+  const [dropFrameId, setDropFrameId] = useState(null);
   const [editEdge, setEditEdge] = useState(null);
   const [uploadingFrame, setUploadingFrame] = useState(false);
+  const [coverBusy, setCoverBusy] = useState(false);
   const mediaImgs = useRef({});
 
   const past = useRef([]);
@@ -92,6 +114,7 @@ export default function Canvas() {
   const wrap = useRef(null);
   const drag = useRef(null);
   const pan = useRef(null);
+  const resize = useRef(null);
   const frameFileRef = useRef(null);
 
   const loadSnaps = useCallback(() => {
@@ -178,6 +201,26 @@ export default function Canvas() {
     setSel(n.id); setPickerOpen(false);
   };
 
+  const addFrameFromScene = (scene) => {
+    if (!canEdit) return;
+    const existing = nodes.find((n) => n.type === "frame" && n.ref_id === scene.id);
+    if (existing) { setSel(existing.id); setPickerOpen(false); toast.message("Đã có khung cho scene này"); return; }
+    const { x, y } = centerPos("frame");
+    const n = { id: uid(), type: "frame", x, y, w: DEFAULT_SIZE.frame.w, h: DEFAULT_SIZE.frame.h,
+      title: `${scene.code} · ${scene.title}`, text: "", color: NODE_TYPES.frame.color, ref_id: scene.id, items: [] };
+    commit([...nodes, n], edges);
+    setSel(n.id); setPickerOpen(false);
+    toast.success(`Đã tạo khung moodboard cho ${scene.code}`);
+  };
+
+  const frameAtPoint = (cx, cy) => {
+    const hit = frames.filter((f) => {
+      const r = measure(f);
+      return cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h;
+    });
+    return hit.length ? hit[hit.length - 1] : null;
+  };
+
   const removeNode = (nid) => {
     commit(nodes.filter((n) => n.id !== nid), edges.filter((e) => e.source !== nid && e.target !== nid));
     setSel(null);
@@ -203,7 +246,25 @@ export default function Canvas() {
     setSel(null); setConnectFrom(null);
     pan.current = { startX: e.clientX, startY: e.clientY, tx: view.tx, ty: view.ty };
   };
+  const onResizeStart = (e, n) => {
+    e.stopPropagation(); e.preventDefault();
+    if (!canEdit || n.locked) return;
+    setSel(n.id);
+    past.current.push(snapshotState()); future.current = [];
+    const el = document.querySelector(`[data-testid="node-${n.id}"]`);
+    resize.current = { id: n.id, type: n.type, startX: e.clientX, startY: e.clientY,
+      ow: el ? el.offsetWidth : (n.w || 180), oh: el ? el.offsetHeight : (n.h || 90) };
+  };
+
   const onMouseMove = (e) => {
+    if (resize.current) {
+      const dw = (e.clientX - resize.current.startX) / view.scale;
+      const dh = (e.clientY - resize.current.startY) / view.scale;
+      const mn = MIN_SIZE[resize.current.type] || { w: 140, h: 80 };
+      setNodes((ns) => ns.map((n) => (n.id === resize.current.id
+        ? { ...n, w: Math.max(mn.w, resize.current.ow + dw), h: Math.max(mn.h, resize.current.oh + dh) } : n)));
+      return;
+    }
     if (drag.current) {
       const dx = (e.clientX - drag.current.startX) / view.scale;
       const dy = (e.clientY - drag.current.startY) / view.scale;
@@ -214,6 +275,7 @@ export default function Canvas() {
     }
   };
   const onMouseUp = () => {
+    if (resize.current) { resize.current = null; setDirty(true); }
     if (drag.current) { if (!drag.current.moved) past.current.pop(); drag.current = null; setDirty(true); }
     pan.current = null;
   };
@@ -242,6 +304,9 @@ export default function Canvas() {
   useEffect(() => {
     nodes.forEach((n) => {
       if (n.media_id) loadMedia(n.media_id);
+      if (n.media_url && !mediaImgs.current[n.media_url]) {
+        const img = new Image(); img.crossOrigin = "anonymous"; img.src = n.media_url; mediaImgs.current[n.media_url] = img;
+      }
       (n.items || []).forEach((it) => it.media_id && loadMedia(it.media_id));
     });
     // eslint-disable-next-line
@@ -274,19 +339,33 @@ export default function Canvas() {
   };
   const removeFrameItem = (nid, idx) => updateNode(nid, { items: (nodes.find((n) => n.id === nid)?.items || []).filter((_, i) => i !== idx) });
 
-  const onDragOver = (e) => { if (canEdit && e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDropActive(true); } };
-  const onDragLeave = (e) => { if (e.target === wrap.current) setDropActive(false); };
+  const pointFromEvent = (e) => {
+    const rect = wrap.current.getBoundingClientRect();
+    return { cx: (e.clientX - rect.left - view.tx) / view.scale, cy: (e.clientY - rect.top - view.ty) / view.scale, rect };
+  };
+  const onDragOver = (e) => {
+    if (canEdit && e.dataTransfer.types.includes("Files")) {
+      e.preventDefault(); setDropActive(true);
+      const { cx, cy } = pointFromEvent(e);
+      const f = frameAtPoint(cx, cy);
+      setDropFrameId(f ? f.id : null);
+    }
+  };
+  const onDragLeave = (e) => { if (e.target === wrap.current) { setDropActive(false); setDropFrameId(null); } };
   const onDrop = (e) => {
     e.preventDefault(); setDropActive(false);
+    const targetFrame = dropFrameId; setDropFrameId(null);
     if (!canEdit) return;
-    const rect = wrap.current.getBoundingClientRect();
     const files = Array.from(e.dataTransfer.files || []).filter((f) => f.type.startsWith("image/"));
     if (!files.length) { toast.message("Chỉ thả được file ảnh"); return; }
+    // Dropped over a frame → images go into that frame's grid
+    if (targetFrame) { setSel(targetFrame); addFrameImages(targetFrame, files); return; }
+    // Otherwise create loose media nodes
+    const { cx, cy } = pointFromEvent(e);
     const created = files.map((f, i) => ({
       node: {
         id: uid(), type: "media", w: DEFAULT_SIZE.media.w, h: DEFAULT_SIZE.media.h,
-        x: (e.clientX - rect.left - view.tx) / view.scale - 120 + i * 26,
-        y: (e.clientY - rect.top - view.ty) / view.scale - 85 + i * 26,
+        x: cx - 120 + i * 26, y: cy - 85 + i * 26,
         title: (f.name || "Ảnh").slice(0, 40), text: "", color: NODE_TYPES.media.color,
       }, file: f,
     }));
@@ -297,6 +376,22 @@ export default function Canvas() {
       catch (err) { toast.error(apiError(err)); }
     });
     toast.success(`Đã thêm ${files.length} ảnh vào canvas`);
+  };
+
+  const applyCover = async (nid, url) => {
+    setCoverBusy(true);
+    try {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      const file = new File([blob], "cover.jpg", { type: blob.type || "image/jpeg" });
+      const d = await uploadFile(file);
+      commit(nodes.map((n) => (n.id === nid ? { ...n, media_id: d.media_id, media_name: "cover" } : n)), edges);
+      toast.success("Đã gắn ảnh bìa");
+    } catch {
+      // CORS fallback: render external url directly
+      commit(nodes.map((n) => (n.id === nid ? { ...n, media_url: url, media_id: null } : n)), edges);
+      toast.message("Đã gắn ảnh bìa (liên kết ngoài)");
+    } finally { setCoverBusy(false); }
   };
 
   const autoLayout = (mode) => {
@@ -405,7 +500,7 @@ export default function Canvas() {
       }
       if (n.type === "media") {
         roundRect(ctx, nx, ny, w, h, 10); ctx.fillStyle = "#18181b"; ctx.fill();
-        drawImg(n.media_id, nx, ny, w, h);
+        drawImg(n.media_id || n.media_url, nx, ny, w, h);
         ctx.fillStyle = "rgba(9,9,11,0.75)"; ctx.fillRect(nx, ny + h - 22, w, 22);
         ctx.fillStyle = "#e4e4e7"; ctx.font = "600 11px sans-serif"; ctx.fillText((n.title || "").slice(0, 36), nx + 8, ny + h - 8);
         return;
@@ -415,7 +510,7 @@ export default function Canvas() {
       ctx.fillStyle = color; ctx.fillRect(nx, ny, 3, h);
       let cy = ny + 20; ctx.fillStyle = "#a1a1aa"; ctx.font = "10px sans-serif";
       ctx.fillText(t.label.toUpperCase(), nx + 14, cy); cy += 16;
-      if ((n.type === "character" || n.type === "setting") && n.media_id) { drawImg(n.media_id, nx + 10, cy, w - 20, 120); cy += 128; }
+      if ((n.type === "character" || n.type === "setting") && (n.media_id || n.media_url)) { drawImg(n.media_id || n.media_url, nx + 10, cy, w - 20, 120); cy += 128; }
       ctx.fillStyle = "#fafafa"; ctx.font = "600 13px sans-serif"; cy = wrapText(ctx, n.title || "", nx + 12, cy, w - 24, 17);
       if (n.text) { ctx.fillStyle = "#a1a1aa"; ctx.font = "11px sans-serif"; cy = wrapText(ctx, n.text, nx + 12, cy + 2, w - 24, 14); }
     });
@@ -504,15 +599,16 @@ export default function Canvas() {
 
           {/* frames first (behind) */}
           {frames.map((n) => (
-            <FrameNode key={n.id} n={n} selected={sel === n.id} canEdit={canEdit} mediaUrls={mediaUrls}
+            <FrameNode key={n.id} n={n} selected={sel === n.id} canEdit={canEdit} mediaUrls={mediaUrls} isDropTarget={dropFrameId === n.id}
               onMouseDown={(e) => onNodeMouseDown(e, n)} onLock={() => toggleLock(n.id)} onLink={() => setConnectFrom(n.id)}
+              onResizeStart={(e) => onResizeStart(e, n)}
               onAddImages={() => { setSel(n.id); frameFileRef.current?.click(); }} onRemoveItem={(i) => removeFrameItem(n.id, i)} />
           ))}
           {/* other nodes */}
           {others.map((n) => (
             <RegularNode key={n.id} n={n} selected={sel === n.id} canEdit={canEdit} mediaUrls={mediaUrls}
               onMouseDown={(e) => onNodeMouseDown(e, n)} onLock={() => toggleLock(n.id)} onLink={() => setConnectFrom(n.id)}
-              onOpenShot={() => setOpenShot(n.ref_id)} />
+              onResizeStart={(e) => onResizeStart(e, n)} onOpenShot={() => setOpenShot(n.ref_id)} />
           ))}
         </div>
 
@@ -610,9 +706,11 @@ export default function Canvas() {
                   </TabsContent>
                   <TabsContent value="scenes" className="mt-3 max-h-72 overflow-y-auto thin-scroll space-y-1.5">
                     {scenes.length === 0 ? <p className="text-sm text-zinc-500 py-2">Chưa có scene.</p> : scenes.map((s) => (
-                      <button key={s.id} onClick={() => addRefNode("scene", s)} data-testid={`pick-scene-${s.code}`} className="flex w-full items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 p-2.5 text-left hover:border-blue-600 transition-colors">
-                        <Clapperboard className="h-4 w-4 text-blue-400 shrink-0" /><span className="font-mono text-xs text-blue-300">{s.code}</span><span className="flex-1 truncate text-sm">{s.title}</span><Plus className="h-3.5 w-3.5 text-zinc-500" />
-                      </button>
+                      <div key={s.id} className="flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 p-2.5 hover:border-blue-600 transition-colors">
+                        <Clapperboard className="h-4 w-4 text-blue-400 shrink-0" /><span className="font-mono text-xs text-blue-300">{s.code}</span><span className="flex-1 truncate text-sm">{s.title}</span>
+                        <button onClick={() => addFrameFromScene(s)} data-testid={`pick-scene-frame-${s.code}`} title="Tạo khung moodboard" className="inline-flex items-center gap-1 rounded bg-blue-600/20 px-2 py-1 text-[11px] text-blue-200 hover:bg-blue-600/40"><FrameIcon className="h-3 w-3" /> Khung</button>
+                        <button onClick={() => addRefNode("scene", s)} data-testid={`pick-scene-${s.code}`} title="Thêm node scene" className="rounded p-1 text-zinc-400 hover:text-blue-300"><Plus className="h-4 w-4" /></button>
+                      </div>
                     ))}
                   </TabsContent>
                 </Tabs>
@@ -654,6 +752,20 @@ export default function Canvas() {
                   <input type="file" accept="image/*" className="hidden" data-testid="node-media-input" onChange={(e) => uploadMedia(selNode.id, e.target.files?.[0])} />
                 </label>
                 {selNode.media_name && <p className="mt-1 text-xs text-zinc-500 truncate">{selNode.media_name}</p>}
+              </div>
+            )}
+            {(selNode.type === "character" || selNode.type === "setting") && (
+              <div className="mt-4">
+                <label className="text-xs text-zinc-500 flex items-center gap-1">Ảnh gợi ý {coverBusy && <Loader2 className="h-3 w-3 animate-spin" />}</label>
+                <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                  {(SUGGESTED_COVERS[selNode.type] || []).map((url) => (
+                    <button key={url} onClick={() => applyCover(selNode.id, url)} data-testid="cover-suggestion"
+                      className="aspect-[4/3] overflow-hidden rounded-md border border-zinc-800 hover:border-blue-500 transition-colors">
+                      <img src={url} alt="" className="h-full w-full object-cover" draggable={false} />
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] text-zinc-600">Bấm để gắn nhanh ảnh bìa {selNode.type === "character" ? "nhân vật" : "bối cảnh"}.</p>
               </div>
             )}
             {selNode.type === "frame" && (
@@ -702,17 +814,27 @@ function NodeChrome({ n, canEdit, onLock, onLink }) {
   );
 }
 
-function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onLink, onOpenShot }) {
+function ResizeHandle({ onResizeStart, show }) {
+  if (!show) return null;
+  return (
+    <div onMouseDown={onResizeStart} data-testid="resize-handle" title="Kéo để đổi cỡ"
+      className="absolute -bottom-1.5 -right-1.5 h-4 w-4 cursor-nwse-resize rounded-sm border border-blue-400 bg-blue-500/90 shadow" />
+  );
+}
+
+function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onLink, onOpenShot, onResizeStart }) {
   const t = NODE_TYPES[n.type] || NODE_TYPES.comment;
   const color = n.color || t.color;
+  const src = n.media_id ? mediaUrls[n.media_id] : n.media_url;
+  const showResize = selected && canEdit && !n.locked && n.type === "media";
   const base = `group absolute rounded-xl border transition-all duration-150 ${selected ? "border-blue-500 ring-2 ring-blue-500/60" : n.locked ? "border-amber-600/50" : "border-zinc-700 hover:border-zinc-500 hover:-translate-y-0.5"} ${n.locked ? "cursor-default" : ""}`;
 
   // MEDIA — edge-to-edge image with gradient title scrim
   if (n.type === "media") {
     return (
       <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} overflow-hidden bg-zinc-900 shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 240, height: n.h || 170 }}>
-        {n.media_id && mediaUrls[n.media_id] ? (
-          <img src={mediaUrls[n.media_id]} alt={n.media_name || ""} data-testid={`node-media-${n.id}`} className="h-full w-full object-cover" draggable={false} />
+        {src ? (
+          <img src={src} alt={n.media_name || ""} data-testid={`node-media-${n.id}`} className="h-full w-full object-cover" draggable={false} />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-zinc-600"><ImageIcon className="h-6 w-6" /><span className="text-[10px]">Chưa có ảnh</span></div>
         )}
@@ -726,6 +848,7 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
           </div>
         )}
         {n.locked && !canEdit && <Lock className="absolute right-1.5 top-1.5 h-3.5 w-3.5 text-amber-400" />}
+        <ResizeHandle show={showResize} onResizeStart={onResizeStart} />
       </div>
     );
   }
@@ -737,7 +860,7 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
         <NodeChrome n={n} canEdit={canEdit} onLock={onLock} onLink={onLink} />
         <div className="px-2.5 pb-2.5 pt-1">
           <div className="aspect-[4/3] w-full overflow-hidden rounded-md bg-zinc-950">
-            {n.media_id && mediaUrls[n.media_id] ? <img src={mediaUrls[n.media_id]} alt="" className="h-full w-full object-cover" draggable={false} /> : <div className="flex h-full items-center justify-center text-zinc-700">{n.type === "character" ? <User className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}</div>}
+            {src ? <img src={src} alt="" data-testid={`node-media-${n.id}`} className="h-full w-full object-cover" draggable={false} /> : <div className="flex h-full items-center justify-center text-zinc-700">{n.type === "character" ? <User className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}</div>}
           </div>
           <p className="mt-2 text-sm font-medium leading-tight text-zinc-100 break-words">{n.title}</p>
           {n.text && <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-zinc-500 break-words">{n.text}</p>}
@@ -777,13 +900,13 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
   );
 }
 
-function FrameNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onLink, onAddImages, onRemoveItem }) {
+function FrameNode({ n, selected, canEdit, mediaUrls, isDropTarget, onMouseDown, onLock, onLink, onAddImages, onRemoveItem, onResizeStart }) {
   const color = n.color || "#3b82f6";
   const items = n.items || [];
   return (
     <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`}
-      className={`group absolute rounded-2xl border-2 border-dashed transition-all duration-150 ${selected ? "ring-2 ring-blue-500/50" : ""}`}
-      style={{ left: n.x, top: n.y, width: n.w || 480, minHeight: n.h || 340, borderColor: color, background: "rgba(24,24,27,0.45)", backdropFilter: "blur(2px)" }}>
+      className={`group absolute rounded-2xl border-2 border-dashed transition-all duration-150 ${selected ? "ring-2 ring-blue-500/50" : ""} ${isDropTarget ? "ring-4 ring-pink-500/60" : ""}`}
+      style={{ left: n.x, top: n.y, width: n.w || 480, minHeight: n.h || 340, borderColor: isDropTarget ? "#ec4899" : color, background: "rgba(24,24,27,0.45)", backdropFilter: "blur(2px)" }}>
       <div className="flex items-center gap-2 px-4 pt-3">
         <FrameIcon className="h-4 w-4" style={{ color }} />
         <span className="font-head text-sm font-bold text-zinc-100 truncate">{n.title || "Khung"}</span>
@@ -813,6 +936,7 @@ function FrameNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onLin
           </div>
         )}
       </div>
+      <ResizeHandle show={selected && canEdit && !n.locked} onResizeStart={onResizeStart} />
     </div>
   );
 }
