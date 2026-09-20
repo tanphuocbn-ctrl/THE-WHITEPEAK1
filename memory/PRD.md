@@ -39,6 +39,12 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - [x] Canvas single-user (Phase 2): bảng vô hạn pan/zoom, node scene/shot/nhân vật/bối cảnh/media/ghi chú, kéo thả, nối cạnh, undo/redo, sửa inline + màu, lưu (optimistic concurrency rev), snapshot lưu/khôi phục.
 - Verified: testing agent 14/14 backend Phase 2, frontend Canvas/Script-AI/Review đạt.
 
+## Implemented (2026-06, iter 3 — Canvas nâng cao)
+- [x] Xuất Canvas PNG: nút "PNG" render toàn bảng (đo kích thước node thật từ DOM, vẽ node + cạnh + ảnh media) → tải file `canvas-<code>-<ts>.png`.
+- [x] Node Media có ảnh: upload ảnh cho node Media (endpoint `POST /canvas/media`, serve qua `GET /canvas/media/{id}` cookie auth) → hiển thị thumbnail ngay trên canvas và trong PNG xuất.
+- [x] Đồng bộ tên node: khi đổi code/title của scene/shot, tiêu đề mọi node canvas tham chiếu (ref_id) tự cập nhật (`common.sync_ref_nodes` gọi trong update scene/shot).
+- Verified: curl (media upload/serve, rename→node sync) + frontend E2E (media preview, PNG export toast).
+
 ## Backlog
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
 - P1: Download token instead of ?auth= JWT in URL; temp-file cleanup on failed upload.
