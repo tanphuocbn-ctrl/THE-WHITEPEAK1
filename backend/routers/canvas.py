@@ -1,7 +1,7 @@
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request, Response, Header, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from bson import ObjectId
 
 from db import db, clean
@@ -13,7 +13,14 @@ from common import new_id, now_iso, get_project_or_404, audit
 router = APIRouter(prefix="/projects/{project_id}", tags=["canvas"])
 
 
+class MediaItem(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    media_id: Optional[str] = None
+    media_name: Optional[str] = None
+
+
 class Node(BaseModel):
+    model_config = ConfigDict(extra="allow")
     id: str
     type: str
     x: float
@@ -26,10 +33,12 @@ class Node(BaseModel):
     ref_id: Optional[str] = None
     media_id: Optional[str] = None
     media_name: Optional[str] = None
+    items: Optional[List[MediaItem]] = None
     locked: Optional[bool] = False
 
 
 class Edge(BaseModel):
+    model_config = ConfigDict(extra="allow")
     id: str
     source: str
     target: str

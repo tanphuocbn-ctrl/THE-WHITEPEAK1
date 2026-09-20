@@ -1,98 +1,126 @@
 {
   "theme": "dark",
-  "archetype": "The Performance Pro & High-Contrast Swiss",
   "typography": {
-    "headings": "Manrope",
-    "body": "IBM Plex Sans",
-    "mono": "JetBrains Mono",
-    "rules": [
-      "Use Manrope for all Headings (H1-H6) with tracking-tight. NEVER use Inter for headings.",
-      "Use IBM Plex Sans for body text to ensure excellent Vietnamese character legibility and technical density.",
-      "Use JetBrains Mono for Timecodes, Shot IDs, and Version numbers to ensure exact alignment.",
-      "Overlines/Labels: Uppercase, text-xs, tracking-[0.1em], text-zinc-400."
-    ]
+    "headings": {
+      "fontFamily": "Manrope, sans-serif",
+      "strategy": "Expressive and modern. Use tracking-tight for large headings to maintain a cinematic and professional feel.",
+      "weights": ["400", "500", "600", "700"]
+    },
+    "body": {
+      "fontFamily": "IBM Plex Sans, sans-serif",
+      "strategy": "Clean, highly readable text for node descriptions, toolbars, and metadata.",
+      "weights": ["400", "500"]
+    },
+    "mono": {
+      "fontFamily": "JetBrains Mono, monospace",
+      "strategy": "Use for technical details, timestamps, shot numbers, and tags inside nodes for a tech-forward look."
+    }
   },
   "colors": {
-    "backgrounds": {
-      "app_bg": "bg-[#09090b] (Obsidian Black)",
-      "sidebar_bg": "bg-[#111113] (Deep Charcoal)",
-      "card_surface": "bg-[#18181b] (Zinc-900)",
-      "hover_surface": "hover:bg-[#27272a] (Zinc-800)"
+    "background": {
+      "canvas": "#09090b",
+      "panel": "#18181b",
+      "node": "#27272a",
+      "frame": "rgba(24, 24, 27, 0.4)",
+      "scrim": "rgba(9, 9, 11, 0.8)"
+    },
+    "border": {
+      "subtle": "#27272a",
+      "medium": "#3f3f46",
+      "focus": "#3b82f6"
     },
     "text": {
-      "primary": "text-zinc-100",
-      "secondary": "text-zinc-400",
-      "disabled": "text-zinc-600"
+      "primary": "#fafafa",
+      "secondary": "#a1a1aa",
+      "accent": "#60a5fa"
     },
     "accents": {
-      "primary_action": "bg-blue-600 hover:bg-blue-500 text-white",
-      "status_approved": "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20",
-      "status_review": "text-amber-400 bg-amber-500/10 border border-amber-500/20",
-      "status_rejected": "text-red-400 bg-red-500/10 border border-red-500/20",
-      "status_todo": "text-zinc-300 bg-zinc-500/10 border border-zinc-500/20"
+      "primary": "#3b82f6",
+      "hover": "#2563eb",
+      "selection": "#60a5fa"
     }
   },
   "visual_enhancers": {
-    "borders": "1px solid border-zinc-800/80 on all cards and sidebars to define hierarchy without shadows.",
-    "shadows": "Minimal. Rely on surface colors and 1px borders instead of drop shadows. Use subtle shadow-lg only for dropdowns and popovers.",
-    "radii": "Small and precise: rounded-md (6px) for inner elements (buttons, pills), rounded-lg (8px) for cards/panels.",
-    "glassmorphism": "Use sparingly for sticky headers or review overlays: backdrop-blur-xl bg-[#09090b]/80 border-b border-zinc-800."
+    "shadows": "In dark mode, rely on 1px borders (e.g., border-zinc-800) and very subtle ambient shadows (shadow-xl shadow-black/50) to separate elevated panels from the canvas. Avoid heavy, soft drop shadows.",
+    "glassmorphism": "For floating toolbars, use a dark glass effect: bg-zinc-900/80 backdrop-blur-xl border border-zinc-800.",
+    "selection_states": "High-contrast outlines (ring-2 ring-blue-500) for selected nodes. Nodes on hover should translate slightly (-translate-y-0.5) with a border brightness increase.",
+    "canvas_background": "Implement a subtle dot or grid pattern on the canvas (e.g., bg-dot-white/[0.05]) to give users a sense of scale and infinite space."
   },
-  "layouts": {
-    "app_shell": "Linear-inspired shell. Collapsible left sidebar (w-64) with dense tree navigation. Main canvas takes remaining width. Sticky top header for contextual actions.",
-    "spacing": "Dense 'Bento' and List Grids. Use p-4 or p-6 for containers. Use gap-2 or gap-4 for dense data rows. Do not use excessive whitespace as this is a professional workspace.",
-    "data_density": "High. Use compact table rows (h-10 or h-12) and clear column alignments.",
-    "panels": "Use slide-over (Sheet) from the right side for Shot Detail, Version Upload, and Review Feedback to keep the user in context."
+  "component_specifics": {
+    "toolbar": {
+      "layout": "Floating panel, center-bottom or middle-left. Pill-shaped or sharply rounded (rounded-xl), densely packed icons with tooltips.",
+      "style": "bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl p-2 flex gap-2"
+    },
+    "nodes": {
+      "general": "All nodes should have rounded-lg or rounded-xl corners, border border-zinc-800, overflow-hidden.",
+      "frame_group": "Large container nodes acting as 'Scenes'. They should have a semi-transparent background (bg-zinc-900/40), a dashed or solid colored border (e.g., border-zinc-700), and a bold Manrope heading in the top-left corner.",
+      "media_image": "Frameless or thin-framed image tiles (Figma moodboard style). Images must use object-cover, rounded-md, with no awkward cropping.",
+      "character_setting": "Card with a thumbnail image on top, followed by IBM Plex Sans title and JetBrains Mono tags (e.g., INT. DAY).",
+      "comment": "Sticky note aesthetic but adapted for dark mode. Use a very dim tinted background (e.g., dark blue/yellow tint: bg-blue-950/30) with a left color bar.",
+      "edges": "Smooth bezier or step paths. Stroke should be zinc-600. When selected, stroke changes to blue-500."
+    }
   },
-  "components": {
-    "status_pills": "Pill-shaped (rounded-full), text-xs font-medium, px-2.5 py-0.5.",
-    "tree_navigation": "Sidebar tree for Sequence > Scene > Shot. Use chevron icons, distinct indentation (pl-4 per level), and hover highlight states.",
-    "video_player_review": "Custom wrapper with absolute positioned Timecode markers on the progress bar. Use transparent overlay for drawing/feedback.",
-    "script_diff_view": "Split or inline diff. Added text: bg-emerald-500/20 text-emerald-200. Removed text: line-through bg-red-500/20 text-red-200.",
-    "kanban_board": "For assignments. Strict columns (To Do, In Progress, Review, Done). Minimal gap between cards (gap-2), thin borders."
+  "grids_and_layouts": {
+    "canvas_layout": "Full viewport w-screen h-screen relative layout. Toolbars and property sidebars are absolutely positioned over the canvas with z-50.",
+    "node_layout": "Inside 'Frame/Group' nodes, media images can be tiled using a grid layout (grid-cols-2 or grid-cols-3) to mimic a moodboard seamlessly.",
+    "sidebar": "If editing a node, slide in a properties panel from the right: w-80 bg-zinc-900 border-l border-zinc-800 h-full p-4."
   },
   "motion": {
-    "interactions": "Fast and snappy. transition-colors duration-150 for hovers. transition-all duration-200 ease-out for slide-overs.",
-    "lists": "Subtle stagger entrance for lists and kanban boards."
+    "interactions": "Use Framer Motion or equivalent for smooth pan/zoom easing. Toolbar actions should have scale-95 on tap and scale-105 on hover.",
+    "transitions": "Node selection and border color changes must transition smoothly (transition-colors duration-200)."
   },
   "accessibility": {
-    "contrast": "Ensure text meets WCAG 2.2 AA (minimum 4.5:1). Dark theme with high contrast text.",
-    "focus": "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#09090b]",
-    "testing": "CRITICAL: All interactive and key informational elements MUST include a data-testid attribute (e.g., data-testid='upload-version-btn')."
+    "testing": "All interactive elements (toolbar buttons, nodes, canvas, zoom controls) MUST have 'data-testid' attributes (e.g., 'data-testid=\"canvas-zoom-in\"').",
+    "contrast": "Ensure text over images has a gradient scrim or text-shadow. Normal text against #18181b or #27272a must be WCAG AA compliant (#a1a1aa or lighter)."
   },
   "image_urls": [
     {
-      "url": "https://images.unsplash.com/photo-1632187981988-40f3cbaeef5e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwzfHxjaW5lbWF0aWMlMjBmaWxtJTIwc2V0JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3ODk4ODQzNTl8MA&ixlib=rb-4.1.0&q=85",
-      "description": "Cinematic film set with camera setup",
-      "category": "Project Cover / Dashboard Hero"
+      "url": "https://images.unsplash.com/photo-1505274664176-44ccaa7969a8",
+      "category": "Character Portrait",
+      "description": "Close-up green eye in shadows, use for character nodes."
     },
     {
-      "url": "https://images.unsplash.com/photo-1612544409025-e1f6a56c1152?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxjaW5lbWF0aWMlMjBmaWxtJTIwc2V0JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3ODk4ODQzNTl8MA&ixlib=rb-4.1.0&q=85",
-      "description": "Film crew working on a large soundstage",
-      "category": "Project Cover / Dashboard Overview"
+      "url": "https://images.unsplash.com/photo-1776197739075-e492fcd2cb46",
+      "category": "Character Portrait",
+      "description": "Man with dark shadows, use for moodboard characters."
     },
     {
-      "url": "https://images.unsplash.com/photo-1614963326505-843868e1d83a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwyfHxmaWxtJTIwZWRpdG9yJTIwd29ya2luZyUyMG1vbml0b3J8ZW58MHx8fHwxNzg5ODg0MzU5fDA&ixlib=rb-4.1.0&q=85",
-      "description": "Video editing software on monitor",
-      "category": "Empty State for Review / Shot Detail"
+      "url": "https://images.pexels.com/photos/39150734/pexels-photo-39150734.jpeg",
+      "category": "Character Portrait",
+      "description": "Gothic style woman in forest, cinematic."
+    },
+    {
+      "url": "https://images.unsplash.com/photo-1592685530107-f2227c2c6bb3",
+      "category": "Setting / Landscape",
+      "description": "Cinematic landscape shot with car, use for location/setting nodes."
+    },
+    {
+      "url": "https://images.pexels.com/photos/13812371/pexels-photo-13812371.jpeg",
+      "category": "Setting / Landscape",
+      "description": "Film crew in mountain landscape, misty scenery."
+    },
+    {
+      "url": "https://images.pexels.com/photos/918281/pexels-photo-918281.jpeg",
+      "category": "Props / Meta",
+      "description": "Film clapperboard, useful for general production metadata nodes."
     }
   ],
-  "instructions_to_main_agent": [
-    "CRITICAL: Use .js and .jsx for all React components. Do NOT use .tsx files.",
-    "Build a production-grade, dark-mode only (or default dark) layout similar to Frame.io and Linear.",
-    "Never use generic centered layouts. Use optical alignment and grid-based left alignments for dense data.",
-    "Do not use complete transparent backgrounds for dropdowns or modals; always use solid dark backgrounds with 1px borders.",
-    "For avatars and missing images, use the provided image_urls. Do not use text placeholders.",
-    "Implement Sonner for toast notifications.",
-    "Ensure Vietnamese language strings are correctly rendered. Do not break text layout with long Vietnamese words.",
-    "Add 'data-testid' to ALL buttons, inputs, links, and actionable rows to support QA testing."
-  ],
-  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
-    "You tend to converge toward generic outputs. Break the mold. Make the UI feel like an expensive, professional film tool.",
-    "Do not add universal transitions (e.g., transition: all). Add explicit transitions (e.g., transition-colors, transition-transform).",
-    "Do not center align the app container. Text alignment must follow natural reading flow (left-aligned).",
-    "Never use AI assistant Emojis. Use Lucide or Phosphor icons for professional toolography.",
-    "Use layered elements (z-index) to create depth. Utilize nested container borders.",
-    "Prioritize pre-existing Shadcn components where applicable."
+  "libraries_and_steps": {
+    "canvas": "Use standard infinite canvas libraries like React Flow. If custom, implement zoom/pan with d3-zoom or react-zoom-pan-pinch.",
+    "icons": "Use lucide-react for all toolbar and UI icons."
+  },
+  "instructions_to_main_agent": {
+    "setup": "Redesign the Canvas page (/projects/:id/canvas) to look like a premium Figma/FigJam board in dark mode.",
+    "features": "Implement drag/move/select, smooth zooming (fit-to-screen), and node connections. The core addition is the 'Frame' node, which acts as a visual container grouping other nodes (like Figma frames).",
+    "aesthetic": "Strictly stick to the dark theme (zinc-950 canvas, zinc-900 panels) with 1px border-zinc-800 to separate elements. No heavy shadows.",
+    "testing": "Ensure all nodes, edges, and controls have stable data-testid attributes.",
+    "components": "Do not use Shadcn 'Card' for the nodes if it enforces padding; nodes need to be edge-to-edge for media images. Build custom raw div nodes with absolute layout for React Flow (or equivalent)."
+  },
+  "universal_guidelines_for_main_agent": [
+    "Do not converge toward generic 'AI slop'. Use layers, subtle borders, and precise spacing.",
+    "Never use pure black or pure white unless for extreme contrast elements. Stick to the zinc scale.",
+    "Ensure the infinite canvas does not trap scroll uncontrollably; use standard spacebar+drag or middle-click panning.",
+    "All modals, toolbars, and popovers should have transparent blurred backgrounds (glassmorphism) without full transparency. (e.g., bg-zinc-900/80 backdrop-blur-md).",
+    "Missing placeholder images MUST use the provided URLs from image_urls, never text placeholders."
   ]
 }
