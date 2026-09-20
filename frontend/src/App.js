@@ -17,6 +17,9 @@ import Board from "@/pages/project/Board";
 import Canvas from "@/pages/project/Canvas";
 import ScriptImport from "@/pages/project/ScriptImport";
 import PostProduction from "@/pages/project/PostProduction";
+import SkillLibrary from "@/pages/project/SkillLibrary";
+import Budget from "@/pages/project/Budget";
+import Reports from "@/pages/Reports";
 import Members from "@/pages/project/Members";
 import AuditLog from "@/pages/project/AuditLog";
 
@@ -40,9 +43,12 @@ function App() {
                 <Route path="canvas" element={<Canvas />} />
                 <Route path="script" element={<ScriptImport />} />
                 <Route path="post" element={<PostProduction />} />
+                <Route path="skills" element={<SkillLibrary />} />
+                <Route path="budget" element={<Budget />} />
                 <Route path="members" element={<Members />} />
                 <Route path="audit" element={<AuditLog />} />
               </Route>
+              <Route path="reports" element={<Reports />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

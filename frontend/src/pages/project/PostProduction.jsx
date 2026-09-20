@@ -42,6 +42,9 @@ export default function PostProduction() {
   const [manifest, setManifest] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState("");
+  const [newAssignee, setNewAssignee] = useState("none");
+  const [newDeadline, setNewDeadline] = useState("");
+  const members = project.members || [];
 
   useEffect(() => {
     api.get(`/projects/${projectId}/sequences`).then((r) => {
@@ -63,16 +66,21 @@ export default function PostProduction() {
   const addTask = async () => {
     if (!newTask.trim()) return;
     try {
-      await api.post(`/projects/${projectId}/post/tasks`, { sequence_id: sel.id, title: newTask });
-      setNewTask(""); loadSeq(sel.id); toast.success("Đã thêm task");
+      await api.post(`/projects/${projectId}/post/tasks`, {
+        sequence_id: sel.id, title: newTask,
+        assignee_id: newAssignee === "none" ? null : newAssignee,
+        deadline: newDeadline ? new Date(newDeadline).toISOString() : null,
+      });
+      setNewTask(""); setNewAssignee("none"); setNewDeadline(""); loadSeq(sel.id); toast.success("Đã thêm task");
     } catch (e) { toast.error(apiError(e)); }
   };
-  const setTaskStatus = async (task, status) => {
+  const patchTask = async (task, patch) => {
     try {
-      await api.patch(`/projects/${projectId}/post/tasks/${task.id}`, { status, rev: task.rev });
+      await api.patch(`/projects/${projectId}/post/tasks/${task.id}`, { ...patch, rev: task.rev });
       loadSeq(sel.id);
     } catch (e) { toast.error(apiError(e)); }
   };
+  const setTaskStatus = (task, status) => patchTask(task, { status });
   const delTask = async (id) => {
     try { await api.delete(`/projects/${projectId}/post/tasks/${id}`); loadSeq(sel.id); }
     catch (e) { toast.error(apiError(e)); }
@@ -109,9 +117,17 @@ export default function PostProduction() {
               <h3 className="font-head font-semibold flex items-center gap-2"><ListChecks className="h-4 w-4 text-zinc-500" /> Task hậu kỳ — {sel.title}</h3>
             </div>
             {canWrite && (
-              <div className="flex gap-2 p-4 border-b border-zinc-800/80">
+              <div className="flex flex-wrap gap-2 p-4 border-b border-zinc-800/80">
                 <Input value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="Tên task (VD: Color grading hồi 1)"
-                  onKeyDown={(e) => e.key === "Enter" && addTask()} data-testid="post-task-input" className="bg-[#0f0f11] border-zinc-800" />
+                  onKeyDown={(e) => e.key === "Enter" && addTask()} data-testid="post-task-input" className="flex-1 min-w-[180px] bg-[#0f0f11] border-zinc-800" />
+                <Select value={newAssignee} onValueChange={setNewAssignee}>
+                  <SelectTrigger data-testid="post-task-assignee" className="w-44 bg-[#0f0f11] border-zinc-800"><SelectValue placeholder="Người phụ trách" /></SelectTrigger>
+                  <SelectContent className="bg-[#18181b] border-zinc-800">
+                    <SelectItem value="none">— Chưa giao —</SelectItem>
+                    {members.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{m.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Input type="date" value={newDeadline} onChange={(e) => setNewDeadline(e.target.value)} data-testid="post-task-deadline" className="w-40 bg-[#0f0f11] border-zinc-800" />
                 <Button onClick={addTask} data-testid="post-task-add" className="bg-blue-600 hover:bg-blue-500 text-white"><Plus className="mr-1 h-4 w-4" /> Thêm</Button>
               </div>
             )}
@@ -120,19 +136,34 @@ export default function PostProduction() {
             ) : (
               <div className="divide-y divide-zinc-800/80">
                 {tasks.map((t) => (
-                  <div key={t.id} className="flex items-center gap-3 p-4" data-testid={`post-task-${t.id}`}>
-                    <span className="flex-1 truncate text-sm">{t.title}</span>
+                  <div key={t.id} className="flex flex-wrap items-center gap-3 p-4" data-testid={`post-task-${t.id}`}>
+                    <span className="flex-1 min-w-[160px] truncate text-sm">{t.title}</span>
                     {canWrite ? (
-                      <Select value={t.status} onValueChange={(v) => setTaskStatus(t, v)}>
-                        <SelectTrigger data-testid={`post-task-status-${t.id}`} className="w-36 h-8 bg-[#0f0f11] border-zinc-800"><SelectValue /></SelectTrigger>
-                        <SelectContent className="bg-[#18181b] border-zinc-800">
-                          {Object.entries(TASK_STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <>
+                        <Select value={t.assignee_id || "none"} onValueChange={(v) => patchTask(t, { assignee_id: v === "none" ? null : v })}>
+                          <SelectTrigger data-testid={`post-task-assignee-${t.id}`} className="w-36 h-8 bg-[#0f0f11] border-zinc-800"><SelectValue placeholder="Giao cho" /></SelectTrigger>
+                          <SelectContent className="bg-[#18181b] border-zinc-800">
+                            <SelectItem value="none">— Chưa giao —</SelectItem>
+                            {members.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{m.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Input type="date" value={t.deadline ? t.deadline.slice(0, 10) : ""} onChange={(e) => patchTask(t, { deadline: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                          data-testid={`post-task-deadline-${t.id}`} className="w-36 h-8 bg-[#0f0f11] border-zinc-800" />
+                        <Select value={t.status} onValueChange={(v) => setTaskStatus(t, v)}>
+                          <SelectTrigger data-testid={`post-task-status-${t.id}`} className="w-36 h-8 bg-[#0f0f11] border-zinc-800"><SelectValue /></SelectTrigger>
+                          <SelectContent className="bg-[#18181b] border-zinc-800">
+                            {Object.entries(TASK_STATUS).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Button size="icon" variant="ghost" onClick={() => delTask(t.id)} className="text-zinc-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></Button>
+                      </>
                     ) : (
-                      <span className={`rounded-full border px-2.5 py-0.5 text-xs ${TASK_STATUS[t.status]?.cls}`}>{TASK_STATUS[t.status]?.label}</span>
+                      <>
+                        <span className="text-xs text-zinc-400">{t.assignee_name || "chưa giao"}</span>
+                        <span className="text-xs text-zinc-500 tabular">{t.deadline ? fmtDate(t.deadline) : "—"}</span>
+                        <span className={`rounded-full border px-2.5 py-0.5 text-xs ${TASK_STATUS[t.status]?.cls}`}>{TASK_STATUS[t.status]?.label}</span>
+                      </>
                     )}
-                    {canWrite && <Button size="icon" variant="ghost" onClick={() => delTask(t.id)} className="text-zinc-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></Button>}
                   </div>
                 ))}
               </div>

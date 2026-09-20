@@ -21,6 +21,7 @@ class TaskIn(BaseModel):
     title: str
     note: Optional[str] = ""
     assignee_id: Optional[str] = None
+    deadline: Optional[str] = None
 
 
 class TaskUpdate(BaseModel):
@@ -28,6 +29,7 @@ class TaskUpdate(BaseModel):
     status: Optional[str] = None
     note: Optional[str] = None
     assignee_id: Optional[str] = None
+    deadline: Optional[str] = None
     rev: int
 
 
@@ -58,6 +60,7 @@ async def create_task(project_id: str, body: TaskIn, user: dict = Depends(A.get_
     doc = {"id": new_id(), "project_id": project_id, "sequence_id": body.sequence_id,
            "title": body.title, "note": body.note or "", "status": "todo",
            "assignee_id": body.assignee_id, "assignee_name": assignee_name,
+           "deadline": body.deadline,
            "rev": 0, "created_at": now_iso(), "updated_at": now_iso()}
     await db.post_tasks.insert_one(dict(doc))
     await audit(project_id, "post_task", doc["id"], "create", user, after=doc, label=f"Tạo task hậu kỳ: {body.title}")

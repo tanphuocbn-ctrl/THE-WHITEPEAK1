@@ -53,6 +53,12 @@ PROJECT_CAPS = {
     "guest": {"project.view", "structure.view", "version.view", "review.view", "script.view", "canvas.view", "post.view"},
 }
 
+# Augment with Skill library + Budget caps
+for _r in ("member", "editor", "reviewer", "guest"):
+    PROJECT_CAPS[_r] |= {"skill.view", "budget.view"}
+for _r in ("pm", "team_lead"):
+    PROJECT_CAPS[_r] |= {"skill.view", "skill.write", "budget.view", "budget.write"}
+
 
 def is_super(user: dict) -> bool:
     return user.get("role") == ROLE_SUPER_ADMIN

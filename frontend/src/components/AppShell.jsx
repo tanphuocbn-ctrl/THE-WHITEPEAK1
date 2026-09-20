@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { ROLE_LABEL } from "@/lib/constants";
-import { Film, LayoutDashboard, FolderKanban, LogOut, ChevronRight, Loader2 } from "lucide-react";
+import { Film, LayoutDashboard, FolderKanban, LogOut, ChevronRight, Loader2, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -38,6 +38,9 @@ export default function AppShell() {
           </NavLink>
           <NavLink to="/projects" end className={navCls} data-testid="nav-projects">
             <FolderKanban className="h-4 w-4" /> Dự án
+          </NavLink>
+          <NavLink to="/reports" end className={navCls} data-testid="nav-reports">
+            <BarChart3 className="h-4 w-4" /> Báo cáo tuần
           </NavLink>
           <div className="pt-4 pb-1 px-3 overline">Dự án của tôi</div>
           {loading ? (

@@ -60,7 +60,14 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - Verified: curl (task, external, upload+download, edge label/lock persist) + frontend E2E (Hậu kỳ tab, arrange/fit/lock/edge label).
 
 ## Phase 3 còn lại (backlog)
-- Nhân sự/lịch, ngân sách/chi phí, dashboard & báo cáo tuần; Thư viện Skill (hướng dẫn/quy trình/prompt) có version.
+- Nhân sự/lịch chi tiết (calendar view).
+
+## Implemented (2026-06, iter 6 — Phase 3 hoàn thiện)
+- [x] Task hậu kỳ có người phụ trách + deadline (assignee select + date, sửa inline; rev concurrency).
+- [x] Thư viện Skill: tạo skill (guide/process/prompt), nội dung có version bất biến, xem lịch sử & nạp lại phiên bản. Router skills.py, tab "Skill". RBAC skill.view/write.
+- [x] Ngân sách & Chi phí: đặt ngân sách dự án, thêm/xóa chi phí (theo category & sequence), thanh tiến độ + **cảnh báo vượt ngân sách**, tổng hợp chi theo sequence. Router budget.py, tab "Ngân sách".
+- [x] Báo cáo tuần (studio-wide): trang "/reports" — version nộp/duyệt Đạt/trả hàng/task HK xong trong 7 ngày, phân bố trạng thái shot, bảng theo dự án (tiến độ, chờ duyệt, task HK mở, ngân sách/over). Endpoint /reports/weekly.
+- Verified: curl (skill v2, budget over=True, weekly aggregate) + frontend E2E (Reports page render, budget over-warning).
 
 ## Backlog
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
