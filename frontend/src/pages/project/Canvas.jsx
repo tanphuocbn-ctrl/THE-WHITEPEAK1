@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Clapperboard, Film, User, MapPin, Image as ImageIcon, MessageSquare,
-  Undo2, Redo2, Save, Camera, Link2, Trash2, Loader2, History, X, Plus, Minus, Boxes, ExternalLink,
+  Undo2, Redo2, Save, Camera, Link2, Trash2, Loader2, History, X, Plus, Minus, Boxes, ExternalLink, Download, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +28,29 @@ const NODE_TYPES = {
 
 let idc = 0;
 const uid = () => `n${Date.now()}${idc++}`;
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxW, lh) {
+  const words = String(text).split(/\s+/);
+  let line = "";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y); y += lh; line = w;
+    } else line = test;
+  }
+  if (line) { ctx.fillText(line, x, y); y += lh; }
+  return y;
+}
 
 export default function Canvas() {
   const { project, projectId, myRole } = useProject();
@@ -50,6 +73,8 @@ export default function Canvas() {
   const [shots, setShots] = useState([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [openShot, setOpenShot] = useState(null);
+  const [mediaUrls, setMediaUrls] = useState({});
+  const mediaImgs = useRef({});
 
   const past = useRef([]);
   const future = useRef([]);
@@ -196,6 +221,78 @@ export default function Canvas() {
 
   const zoomBtn = (f) => setView((v) => ({ ...v, scale: Math.min(2.5, Math.max(0.3, v.scale * f)) }));
 
+  useEffect(() => {
+    nodes.forEach((n) => {
+      if (n.media_id && !mediaUrls[n.media_id]) {
+        api.get(`/projects/${projectId}/canvas/media/${n.media_id}`, { responseType: "blob" })
+          .then((r) => {
+            const url = URL.createObjectURL(r.data);
+            const img = new Image(); img.src = url; mediaImgs.current[n.media_id] = img;
+            setMediaUrls((prev) => ({ ...prev, [n.media_id]: url }));
+          }).catch(() => {});
+      }
+    });
+    // eslint-disable-next-line
+  }, [nodes, projectId]);
+
+  const uploadMedia = async (nid, file) => {
+    if (!file) return;
+    const fd = new FormData(); fd.append("file", file);
+    try {
+      const { data } = await api.post(`/projects/${projectId}/canvas/media`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      updateNode(nid, { media_id: data.media_id, media_name: data.filename });
+      commit(nodes.map((n) => (n.id === nid ? { ...n, media_id: data.media_id, media_name: data.filename } : n)), edges);
+      toast.success("Đã gắn ảnh vào node Media");
+    } catch (e) { toast.error(apiError(e)); }
+  };
+
+  const exportPng = () => {
+    if (!nodes.length) { toast.message("Canvas trống, chưa có gì để xuất"); return; }
+    const pad = 48;
+    const rects = nodes.map((n) => {
+      const el = document.querySelector(`[data-testid="node-${n.id}"]`);
+      return { n, x: n.x, y: n.y, w: el ? el.offsetWidth : (n.w || 180), h: el ? el.offsetHeight : (n.h || 90) };
+    });
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    rects.forEach((r) => { minX = Math.min(minX, r.x); minY = Math.min(minY, r.y); maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h); });
+    const W = Math.ceil(maxX - minX) + pad * 2, H = Math.ceil(maxY - minY) + pad * 2;
+    const s = Math.min(2, 4000 / Math.max(W, H, 1));
+    const cv = document.createElement("canvas");
+    cv.width = Math.round(W * s); cv.height = Math.round(H * s);
+    const ctx = cv.getContext("2d");
+    ctx.scale(s, s);
+    ctx.fillStyle = "#0d0d0f"; ctx.fillRect(0, 0, W, H);
+    const ox = pad - minX, oy = pad - minY;
+    ctx.strokeStyle = "#3f3f46"; ctx.lineWidth = 2;
+    edges.forEach((e) => {
+      const a = rects.find((r) => r.n.id === e.source), b = rects.find((r) => r.n.id === e.target);
+      if (!a || !b) return;
+      ctx.beginPath(); ctx.moveTo(ox + a.x + a.w / 2, oy + a.y + a.h / 2); ctx.lineTo(ox + b.x + b.w / 2, oy + b.y + b.h / 2); ctx.stroke();
+    });
+    rects.forEach(({ n, x, y, w, h }) => {
+      const t = NODE_TYPES[n.type] || NODE_TYPES.comment;
+      const color = n.color || t.color;
+      const nx = ox + x, ny = oy + y;
+      roundRect(ctx, nx, ny, w, h, 8); ctx.fillStyle = "#18181b"; ctx.fill();
+      ctx.strokeStyle = "#3f3f46"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = color; ctx.fillRect(nx, ny, 3, h);
+      let cy = ny + 18;
+      ctx.fillStyle = "#a1a1aa"; ctx.font = "10px sans-serif";
+      ctx.fillText(t.label.toUpperCase(), nx + 14, cy); cy += 16;
+      ctx.fillStyle = "#f4f4f5"; ctx.font = "600 13px sans-serif";
+      cy = wrapText(ctx, n.title || "", nx + 12, cy, w - 24, 17);
+      const img = n.media_id && mediaImgs.current[n.media_id];
+      if (img && img.complete && img.naturalWidth) {
+        const iw = w - 16, ih = Math.min(140, iw * (img.naturalHeight / img.naturalWidth));
+        try { ctx.drawImage(img, nx + 8, cy + 2, iw, ih); cy += ih + 8; } catch {}
+      }
+      if (n.text) { ctx.fillStyle = "#a1a1aa"; ctx.font = "11px sans-serif"; cy = wrapText(ctx, n.text, nx + 12, cy + 2, w - 24, 14); }
+    });
+    const a = document.createElement("a");
+    a.href = cv.toDataURL("image/png"); a.download = `canvas-${project.code}-${Date.now()}.png`; a.click();
+    toast.success("Đã xuất PNG");
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -289,6 +386,7 @@ export default function Canvas() {
             <span className="w-12 text-center text-xs tabular text-zinc-400">{Math.round(view.scale * 100)}%</span>
             <Button size="icon" variant="ghost" onClick={() => zoomBtn(1.1)} className="h-8 w-8 text-zinc-400"><Plus className="h-3.5 w-3.5" /></Button>
           </div>
+          <Button size="sm" variant="outline" onClick={exportPng} data-testid="canvas-export-btn" className="border-zinc-800 bg-[#18181b] text-zinc-200 hover:bg-[#27272a]"><Download className="mr-1.5 h-3.5 w-3.5" /> PNG</Button>
           <Dialog open={snapOpen} onOpenChange={(o) => { setSnapOpen(o); if (o) loadSnaps(); }}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" data-testid="canvas-snapshots-btn" className="border-zinc-800 bg-[#18181b] text-zinc-200"><History className="mr-1.5 h-3.5 w-3.5" /> Snapshot</Button>
@@ -357,6 +455,10 @@ export default function Canvas() {
                 </div>
                 <div className="px-2.5 pb-2.5 pt-1">
                   <p className="text-sm font-medium text-zinc-100 leading-tight break-words">{n.title}</p>
+                  {n.media_id && mediaUrls[n.media_id] && (
+                    <img src={mediaUrls[n.media_id]} alt={n.media_name || ""} data-testid={`node-media-${n.id}`}
+                      className="mt-1.5 w-full rounded object-cover" style={{ maxHeight: 130 }} draggable={false} />
+                  )}
                   {n.text && <p className="mt-1 text-xs text-zinc-400 break-words whitespace-pre-line">{n.text}</p>}
                   {n.ref_id && (
                     <div className="mt-1.5 flex items-center gap-2">
@@ -405,6 +507,17 @@ export default function Canvas() {
           </div>
           <Textarea value={selNode.text} onChange={(e) => updateNode(selNode.id, { text: e.target.value })}
             placeholder="Nội dung / ghi chú" data-testid="node-text-input" className="mt-3 bg-[#0f0f11] border-zinc-800 text-sm" />
+          {selNode.type === "media" && (
+            <div className="mt-3">
+              <label className="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
+                <Upload className="h-4 w-4 text-pink-400" />
+                <span>{selNode.media_id ? "Đổi ảnh" : "Tải ảnh cho node Media"}</span>
+                <input type="file" accept="image/*" className="hidden" data-testid="node-media-input"
+                  onChange={(e) => uploadMedia(selNode.id, e.target.files?.[0])} />
+              </label>
+              {selNode.media_name && <p className="mt-1 text-xs text-zinc-500">{selNode.media_name}</p>}
+            </div>
+          )}
         </div>
       )}
 

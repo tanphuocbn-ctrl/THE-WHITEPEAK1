@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from db import db, clean
 import auth as A
 import rbac
-from common import new_id, now_iso, get_project_or_404, audit, check_rev
+from common import new_id, now_iso, get_project_or_404, audit, check_rev, sync_ref_nodes
 
 router = APIRouter(prefix="/projects/{project_id}", tags=["structure"])
 
@@ -153,6 +153,8 @@ async def update_scene(project_id: str, scene_id: str, body: SceneUpdate, user: 
         raise HTTPException(status_code=409, detail="Xung đột phiên bản")
     await audit(project_id, "scene", scene_id, "update", user, before=clean(doc), after=clean(dict(res)),
                 restorable=True, label=f"Sửa scene {res.get('code')}")
+    if "code" in changes or "title" in changes:
+        await sync_ref_nodes(project_id, scene_id, "scene", f"{res.get('code')} · {res.get('title')}")
     return clean(res)
 
 
@@ -244,6 +246,8 @@ async def update_shot(project_id: str, shot_id: str, body: ShotUpdate, user: dic
         raise HTTPException(status_code=409, detail="Xung đột phiên bản")
     await audit(project_id, "shot", shot_id, "update", user, before=clean(doc), after=clean(dict(res)),
                 restorable=True, label=f"Sửa shot {res.get('code')}")
+    if "code" in changes or "title" in changes:
+        await sync_ref_nodes(project_id, shot_id, "shot", f"{res.get('code')} · {res.get('title')}")
     return clean(res)
 
 

@@ -47,3 +47,18 @@ def check_rev(doc: dict, expected_rev):
             status_code=409,
             detail=f"Xung đột phiên bản: dữ liệu đã bị thay đổi (rev hiện tại={doc.get('rev', 0)}). Vui lòng tải lại.",
         )
+
+
+async def sync_ref_nodes(project_id: str, ref_id: str, node_type: str, new_title: str):
+    """Keep canvas node titles in sync when the referenced scene/shot is renamed."""
+    canvas = await db.canvases.find_one({"project_id": project_id})
+    if not canvas:
+        return
+    changed = False
+    for n in canvas.get("nodes", []):
+        if n.get("ref_id") == ref_id and n.get("type") == node_type and n.get("title") != new_title:
+            n["title"] = new_title
+            changed = True
+    if changed:
+        await db.canvases.update_one({"project_id": project_id},
+                                     {"$set": {"nodes": canvas["nodes"]}, "$inc": {"rev": 1}})
