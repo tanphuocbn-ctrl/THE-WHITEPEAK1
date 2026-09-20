@@ -45,6 +45,12 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - [x] Đồng bộ tên node: khi đổi code/title của scene/shot, tiêu đề mọi node canvas tham chiếu (ref_id) tự cập nhật (`common.sync_ref_nodes` gọi trong update scene/shot).
 - Verified: curl (media upload/serve, rename→node sync) + frontend E2E (media preview, PNG export toast).
 
+## Implemented (2026-06, iter 4 — Canvas UX)
+- [x] Kéo-thả ảnh vào Canvas: thả file ảnh từ máy lên bảng → tạo node Media tại vị trí thả + upload tự động (overlay gợi ý khi kéo).
+- [x] Sắp xếp tự động: nút "Sắp xếp" → "Theo lưới" hoặc "Theo cây Scene → Shot" (nhóm shot dưới scene qua scene_id), tự fit zoom.
+- [x] Xuất PNG kèm tiêu đề: dải header trên ảnh PNG ghi mã+tên dự án, ngày xuất, số node.
+- Verified: frontend E2E (arrange tree layout đúng nhóm, export toast).
+
 ## Backlog
 - P1: Script diff selective confirm (checkbox per scene); scene detail edit UI; shot edit/delete UI.
 - P1: Download token instead of ?auth= JWT in URL; temp-file cleanup on failed upload.

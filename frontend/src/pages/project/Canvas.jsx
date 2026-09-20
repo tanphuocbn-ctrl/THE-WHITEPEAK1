@@ -12,8 +12,12 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Clapperboard, Film, User, MapPin, Image as ImageIcon, MessageSquare,
   Undo2, Redo2, Save, Camera, Link2, Trash2, Loader2, History, X, Plus, Minus, Boxes, ExternalLink, Download, Upload,
+  LayoutGrid, Workflow, Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -74,6 +78,7 @@ export default function Canvas() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [openShot, setOpenShot] = useState(null);
   const [mediaUrls, setMediaUrls] = useState({});
+  const [dropActive, setDropActive] = useState(false);
   const mediaImgs = useRef({});
 
   const past = useRef([]);
@@ -246,6 +251,62 @@ export default function Canvas() {
     } catch (e) { toast.error(apiError(e)); }
   };
 
+  const onDragOver = (e) => { if (canEdit && e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDropActive(true); } };
+  const onDragLeave = (e) => { if (e.target === wrap.current) setDropActive(false); };
+  const onDrop = (e) => {
+    e.preventDefault(); setDropActive(false);
+    if (!canEdit) return;
+    const rect = wrap.current.getBoundingClientRect();
+    const files = Array.from(e.dataTransfer.files || []).filter((f) => f.type.startsWith("image/"));
+    if (!files.length) { toast.message("Chỉ thả được file ảnh"); return; }
+    const created = files.map((f, i) => ({
+      node: {
+        id: uid(), type: "media", w: 200, h: 130,
+        x: (e.clientX - rect.left - view.tx) / view.scale - 100 + i * 28,
+        y: (e.clientY - rect.top - view.ty) / view.scale - 65 + i * 28,
+        title: (f.name || "Ảnh").slice(0, 40), text: "", color: NODE_TYPES.media.color,
+      }, file: f,
+    }));
+    commit([...nodes, ...created.map((c) => c.node)], edges);
+    setSel(created[created.length - 1].node.id);
+    created.forEach(async (c) => {
+      const fd = new FormData(); fd.append("file", c.file);
+      try {
+        const { data } = await api.post(`/projects/${projectId}/canvas/media`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+        setNodes((ns) => ns.map((x) => (x.id === c.node.id ? { ...x, media_id: data.media_id, media_name: data.filename } : x)));
+        setDirty(true);
+      } catch (err) { toast.error(apiError(err)); }
+    });
+    toast.success(`Đã thêm ${files.length} ảnh vào canvas`);
+  };
+
+  const autoLayout = (mode) => {
+    if (!canEdit || !nodes.length) return;
+    const rowGap = 180, colGap = 230;
+    const idx = Object.fromEntries(nodes.map((n, i) => [n.id, i]));
+    let next = nodes.map((n) => ({ ...n }));
+    if (mode === "grid") {
+      const cols = Math.max(1, Math.ceil(Math.sqrt(nodes.length)));
+      next = next.map((n, i) => ({ ...n, x: (i % cols) * colGap + 40, y: Math.floor(i / cols) * rowGap + 40 }));
+    } else {
+      const shotScene = Object.fromEntries(shots.map((s) => [s.id, s.scene_id]));
+      const placed = new Set();
+      let row = 0;
+      next.filter((n) => n.type === "scene").forEach((sn) => {
+        next[idx[sn.id]] = { ...sn, x: 40, y: row * rowGap + 40 }; placed.add(sn.id);
+        next.filter((n) => n.type === "shot" && n.ref_id && shotScene[n.ref_id] === sn.ref_id)
+          .forEach((k, i) => { next[idx[k.id]] = { ...k, x: 320 + i * colGap, y: row * rowGap + 40 }; placed.add(k.id); });
+        row++;
+      });
+      const rest = next.filter((n) => !placed.has(n.id));
+      const cols = Math.max(1, Math.ceil(Math.sqrt(rest.length || 1)));
+      rest.forEach((n, i) => { next[idx[n.id]] = { ...n, x: (i % cols) * colGap + 40, y: (row + Math.floor(i / cols)) * rowGap + 40 }; });
+    }
+    commit(next, edges);
+    setView({ tx: 24, ty: 24, scale: 0.8 });
+    toast.success(mode === "grid" ? "Đã dàn theo lưới" : "Đã dàn theo cây Scene → Shot");
+  };
+
   const exportPng = () => {
     if (!nodes.length) { toast.message("Canvas trống, chưa có gì để xuất"); return; }
     const pad = 48;
@@ -255,14 +316,25 @@ export default function Canvas() {
     });
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     rects.forEach((r) => { minX = Math.min(minX, r.x); minY = Math.min(minY, r.y); maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h); });
-    const W = Math.ceil(maxX - minX) + pad * 2, H = Math.ceil(maxY - minY) + pad * 2;
+    const headerH = 72;
+    const W = Math.ceil(maxX - minX) + pad * 2, H = Math.ceil(maxY - minY) + pad * 2 + headerH;
     const s = Math.min(2, 4000 / Math.max(W, H, 1));
     const cv = document.createElement("canvas");
     cv.width = Math.round(W * s); cv.height = Math.round(H * s);
     const ctx = cv.getContext("2d");
     ctx.scale(s, s);
     ctx.fillStyle = "#0d0d0f"; ctx.fillRect(0, 0, W, H);
-    const ox = pad - minX, oy = pad - minY;
+    // Header band: project title + export date
+    ctx.fillStyle = "#111113"; ctx.fillRect(0, 0, W, headerH);
+    ctx.strokeStyle = "#27272a"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, headerH); ctx.lineTo(W, headerH); ctx.stroke();
+    ctx.fillStyle = "#3b82f6"; ctx.fillRect(pad, 22, 4, 30);
+    ctx.fillStyle = "#f4f4f5"; ctx.font = "700 20px sans-serif";
+    ctx.fillText(`${project.code} · ${project.title}`, pad + 14, 40);
+    ctx.fillStyle = "#a1a1aa"; ctx.font = "12px sans-serif";
+    const dstr = new Date().toLocaleString("vi-VN");
+    ctx.fillText(`Canvas · Xuất ngày ${dstr} · ${nodes.length} node`, pad + 14, 58);
+    const ox = pad - minX, oy = pad - minY + headerH;
     ctx.strokeStyle = "#3f3f46"; ctx.lineWidth = 2;
     edges.forEach((e) => {
       const a = rects.find((r) => r.n.id === e.source), b = rects.find((r) => r.n.id === e.target);
@@ -386,6 +458,17 @@ export default function Canvas() {
             <span className="w-12 text-center text-xs tabular text-zinc-400">{Math.round(view.scale * 100)}%</span>
             <Button size="icon" variant="ghost" onClick={() => zoomBtn(1.1)} className="h-8 w-8 text-zinc-400"><Plus className="h-3.5 w-3.5" /></Button>
           </div>
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" data-testid="canvas-arrange-btn" className="border-zinc-800 bg-[#18181b] text-zinc-200 hover:bg-[#27272a]"><Wand2 className="mr-1.5 h-3.5 w-3.5" /> Sắp xếp</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-[#18181b] border-zinc-800">
+                <DropdownMenuItem onClick={() => autoLayout("grid")} data-testid="arrange-grid" className="focus:bg-[#27272a]"><LayoutGrid className="mr-2 h-4 w-4" /> Theo lưới</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => autoLayout("tree")} data-testid="arrange-tree" className="focus:bg-[#27272a]"><Workflow className="mr-2 h-4 w-4" /> Theo cây Scene → Shot</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Button size="sm" variant="outline" onClick={exportPng} data-testid="canvas-export-btn" className="border-zinc-800 bg-[#18181b] text-zinc-200 hover:bg-[#27272a]"><Download className="mr-1.5 h-3.5 w-3.5" /> PNG</Button>
           <Dialog open={snapOpen} onOpenChange={(o) => { setSnapOpen(o); if (o) loadSnaps(); }}>
             <DialogTrigger asChild>
@@ -426,9 +509,15 @@ export default function Canvas() {
 
       {/* Board */}
       <div ref={wrap} onMouseDown={onBgMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp} onWheel={onWheel}
+        onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
         data-testid="canvas-board"
-        className="relative h-[68vh] overflow-hidden rounded-lg border border-zinc-800/80 bg-[#0d0d0f] cursor-grab active:cursor-grabbing select-none"
+        className={`relative h-[68vh] overflow-hidden rounded-lg border bg-[#0d0d0f] cursor-grab active:cursor-grabbing select-none transition-colors ${dropActive ? "border-pink-500 ring-2 ring-pink-500/40" : "border-zinc-800/80"}`}
         style={{ backgroundImage: "radial-gradient(circle, #1f1f23 1px, transparent 1px)", backgroundSize: `${24 * view.scale}px ${24 * view.scale}px`, backgroundPosition: `${view.tx}px ${view.ty}px` }}>
+        {dropActive && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-pink-500/5" data-testid="drop-overlay">
+            <span className="rounded-lg border border-pink-500/40 bg-[#18181b] px-4 py-2 text-sm text-pink-300"><ImageIcon className="mr-2 inline h-4 w-4" /> Thả ảnh để tạo node Media</span>
+          </div>
+        )}
         <div className="absolute top-0 left-0" style={{ transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`, transformOrigin: "0 0" }}>
           <svg className="absolute overflow-visible pointer-events-none" style={{ width: 1, height: 1 }}>
             {edges.map((ed) => {
