@@ -526,7 +526,8 @@ export default function Canvas() {
         )}
 
         {/* top-right control cluster */}
-        <div className="absolute right-4 top-4 z-40 flex items-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl">
+        <div className="absolute top-4 z-40 flex items-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl transition-[right] duration-200"
+          style={{ right: selNode && canEdit ? "21rem" : "1rem" }}>
           <IconBtn onClick={undo} disabled={!canEdit} title="Hoàn tác (Ctrl+Z)" testid="canvas-undo"><Undo2 className="h-4 w-4" /></IconBtn>
           <IconBtn onClick={redo} disabled={!canEdit} title="Làm lại" testid="canvas-redo"><Redo2 className="h-4 w-4" /></IconBtn>
           <div className="mx-0.5 h-6 w-px bg-zinc-800" />
