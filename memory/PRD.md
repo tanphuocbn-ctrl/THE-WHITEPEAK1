@@ -96,7 +96,14 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 - P3 (Phase 3): Hậu kỳ per-sequence tasks + external ingest manifest; Skill library; staffing/budget; weekly reports.
 
 ## Next tasks
-Gather feedback on Phase 1, then start Phase 2 Canvas or deepen script diff / review video player.
+
+## Implemented (2026-06, iter 11 — Giao diện Sáng/Tối + biểu đồ Recharts)
+- [x] Hệ thống theme bằng CSS variables: `:root` (tối, mặc định) + `html.light` (sáng), token ngữ nghĩa --bg/--panel/--panel-2/--border/--text/--muted/--muted-2/--accent/--chart-1..6/--dot; nút chuyển Sáng/Tối (ThemeToggle) ở sidebar + mobile, lưu localStorage, giữ khi reload.
+- [x] Refactor màu toàn app (24 file) từ zinc/hex cứng → biến ngữ nghĩa để lật theme sạch, bảng màu hài hoà hơn.
+- [x] Dashboard: KPI card (số JetBrains Mono, icon tint), donut trạng thái shot (tâm hiển thị tổng), lưới dự án gần đây có poster.
+- [x] Báo cáo tuần: biểu đồ cột ngang trạng thái shot + cột nhóm hoạt động tuần (Recharts, fill theo var(--chart-*) tự đổi theme), giữ bảng theo dự án + Xuất PDF.
+- [x] Kéo ảnh vào Khung scene trên canvas dự án: xác nhận đã hoạt động (thả ảnh lên vùng Khung → vào lưới khung đó).
+- Verified: testing agent iter 9 — frontend 100%, không lỗi đọc chữ ở cả 2 theme, toggle giữ trạng thái, biểu đồ render đúng.
 
 ## Implemented (2026-06, iter 10 — Thư viện tài nguyên + AI phân bổ về scene)
 - [x] Tab "Thư viện" mỗi dự án: quản lý Nhân vật & Bối cảnh (thêm/tải ảnh/xóa) — collection `resources` {kind, name, media_id, description}.

@@ -1,0 +1,23 @@
+{
+  "summary": "Frontend regression sweep after 24-file theme/color refactor + Recharts + theme toggle. Login OK. Dashboard renders (4 stat cards, donut shot-status-chart with center total 8, 6 dist rows, 2 recent project cards). Theme toggle flips html.light, body bg goes rgb(12,12,14) -> rgb(250,250,250), writes localStorage.theme='light' and PERSISTS across reload. Reports renders report-status-chart + report-weekly-chart, 4 KPI cards, 2 project rows, PDF export button present. Staffing page renders (staffing-page) with week nav. DEMO-01 project loads; Structure/Board/Canvas/Resources tabs all switchable. Canvas: 12 frames present, frame '+' upload path (frame-add-<id> -> frame-file-input) successfully added 1 image (tiles 3 -> 4). OS-file-drop simulation via synthetic DataTransfer is infeasible (browser security drops files from dispatched DragEvent), documented but frame upload path confirmed. Zero pageerrors during entire sweep; the only console_err seen were the expected 401s from /api/auth/me pre-login.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Canvas.jsx is 960 lines - candidate for splitting into smaller modules (frame logic, node logic, drag/drop, auto-layout) per >700-line guideline.",
+    "onDrop uses dropFrameId state captured at drop time - works, but relies on dragover having fired; drops from outside browser without a preceding dragover on the frame would fall to loose media. Acceptable.",
+    "Synthetic file-drop testing on the canvas via Playwright dispatchEvent+DataTransfer is not effective due to browser security; recommend adding a hidden 'drop-simulator' testing hook or exposing an internal API on window for e2e coverage of the frame-drop path."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped)", "frontend": "100%"},
+  "test_credentials": "Admin tanphuoc.bn@gmail.com / Studio@2026 - works.",
+  "seed_data_creation": "None. Uploaded 1 tiny 1x1 PNG into first frame of DEMO-01 (tile count now 4).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Theme, charts, and Canvas frame-upload verified. DEMO-01 first frame now has 4 tiles (was 3). If retesting drag-drop-into-frame across browser boundaries, consider adding a test hook in Canvas.jsx (e.g., window.__canvasAddToFrame) since Playwright cannot synthesize OS file drops via dispatchEvent."
+}
