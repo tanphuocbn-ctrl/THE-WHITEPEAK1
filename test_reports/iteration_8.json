@@ -1,0 +1,21 @@
+{
+  "summary": "Verified Resource Library feature end-to-end on DEMO-01. Backend (9/9 pytest passed): resources CRUD (create character/background, upload image via /canvas/media + PATCH media_id, delete), invalid kind rejection, POST /resources/auto-map (ai_used=true, 11 scenes updated, background 'Quán cà phê' assigned to S1 cafe scene), scene PATCH persistence for characters/background_id/design_note with rev, POST /canvas/build-scenes creates frame nodes (title '<code> · <title>'), and per-scene canvas ?scene_id= is fully INDEPENDENT from project canvas (saving scene canvas does not change project canvas rev nor nodes). Frontend UI: login → /projects/{id}/resources loads resources-page with 11 scene rows, Nhân vật + Bối cảnh columns; added TEST_An_UI character via add-character-input/btn (card resource-<id> rendered), deleted it via resource-delete-<id> (card removed); S1 scene-bg select shows 'Quán cà phê' (auto-map result); design_note persisted after page reload; scene-open-canvas-<id> navigates to /projects/{id}/scenes/{sid}/canvas, scene-canvas-banner shows 'Canvas dự án / S1 · NỘI. QUÁN CÀ PHÊ - NGÀY' with link back; scene canvas rendered nodes (design_note comment + backend-added marker). No pageerror, no console errors.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_resources.py", "/app/test_reports/pytest/resources_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "resources.py auto_map uses model 'gemini-3.1-pro-preview' — verify EMERGENT_LLM_KEY supports that alias; falls back gracefully via substring match, which is currently the observed AI success path.",
+    "Resources.jsx nests <Textarea> and other inline controls inside the flex row — works but could be split into a SceneRow component for readability (file is ~256 lines, acceptable).",
+    "canvas.py build_scenes replaces the entire per-scene canvas nodes on every rebuild — this overwrites any manual edits users made in a scene canvas. Consider merging like it does for project frames (frame_by_ref) or warn user before overwrite.",
+    "resources.py DELETE unlinks from scenes but does NOT bump scene rev — subsequent PATCH from cached UI with the old rev could still 409; UI reloads after delete so acceptable in practice."
+  ],
+  "updated_files": ["/app/backend/tests/test_resources.py"],
+  "success_rate": {"backend": "100% (9/9)", "frontend": "100%"},
+  "test_credentials": "tanphuoc.bn@gmail.com / Studio@2026 (super_admin, pm of DEMO-01)",
+  "seed_data_creation": "Created and deleted TEST_An_UI character; created TEST_BG_* background (deleted); added TEST_MARKER text node to S1's scene canvas (still present, harmless); set S1 design_note='TEST NOTE 86fa8'.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "S1 scene canvas currently contains a TEST_MARKER node from independence-test; clean via API PUT if needed. Scene canvas 'Đã lưu' save button is disabled when nothing dirty — expected; make canvas 'dirty' first (e.g., drag a node) before asserting canvas-save-btn click. Auto-map on DEMO-01 assigns background 'Quán cà phê' to S1 by location/name substring; characters may be 0 for demo scenes since names don't appear literally. build-scenes overwrites per-scene canvases on each run.",
+  "rca of the issue": "N/A — no bugs found."
+}

@@ -97,3 +97,11 @@ Phase 1 spine: Auth+RBAC; Project/Sequence/Scene/Shot CRUD; script import (DOCX/
 
 ## Next tasks
 Gather feedback on Phase 1, then start Phase 2 Canvas or deepen script diff / review video player.
+
+## Implemented (2026-06, iter 10 — Thư viện tài nguyên + AI phân bổ về scene)
+- [x] Tab "Thư viện" mỗi dự án: quản lý Nhân vật & Bối cảnh (thêm/tải ảnh/xóa) — collection `resources` {kind, name, media_id, description}.
+- [x] Scene design: mỗi scene có ảnh thiết kế (design_media_id) + ghi chú (design_note); gán nhân vật (characters[]) & bối cảnh (background_id) — SceneUpdate mở rộng.
+- [x] AI tự phân bổ: `POST /resources/auto-map` dùng Gemini đọc kịch bản → phát hiện nhân vật + bối cảnh mỗi scene, khớp về thư viện (tên nhân vật, location↔tên bối cảnh); fallback so khớp chuỗi; user chỉnh lại được.
+- [x] Dựng canvas theo scene: `POST /canvas/build-scenes` tạo 1 Khung moodboard/scene trong canvas dự án (tự điền background + ảnh nhân vật + thiết kế) + canvas RIÊNG mỗi scene (`?scene_id=`), độc lập; rebuild KHÔNG ghi đè canvas scene đã sửa tay.
+- [x] Canvas theo scene: route `/projects/:id/scenes/:sceneId/canvas`, banner + link về canvas dự án; mở từ hàng scene trong Thư viện.
+- Verified: testing agent iter 8 — backend 9/9 pytest + frontend E2E 100%.

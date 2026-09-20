@@ -250,10 +250,8 @@ async def build_scenes(project_id: str, user: dict = Depends(A.get_current_user)
             snodes.append({"id": new_id(), "type": "comment", "x": 640, "y": 290, "w": 320, "h": 140,
                            "title": "Ghi chú thiết kế", "text": sc.get("design_note"), "color": "#eab308"})
         sdoc = await db.canvases.find_one({"project_id": project_id, "scene_id": sc["id"]})
-        if sdoc:
-            await db.canvases.update_one({"project_id": project_id, "scene_id": sc["id"]},
-                                         {"$set": {"nodes": snodes, "updated_at": now_iso()}, "$inc": {"rev": 1}})
-        else:
+        if not sdoc:
+            # Only auto-populate a scene canvas the first time; never overwrite user edits on rebuild.
             await db.canvases.insert_one({"id": new_id(), "project_id": project_id, "scene_id": sc["id"],
                                           "nodes": snodes, "edges": [], "rev": 0, "updated_at": now_iso()})
 
