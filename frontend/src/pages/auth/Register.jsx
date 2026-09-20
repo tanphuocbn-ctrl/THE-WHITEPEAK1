@@ -34,24 +34,24 @@ export default function Register() {
         <div className="space-y-2">
           <Label htmlFor="name">Họ tên</Label>
           <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required
-            data-testid="register-name-input" className="bg-[#18181b] border-zinc-800" />
+            data-testid="register-name-input" className="bg-[var(--panel)] border-[var(--border)]" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            data-testid="register-email-input" className="bg-[#18181b] border-zinc-800" />
+            data-testid="register-email-input" className="bg-[var(--panel)] border-[var(--border)]" />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Mật khẩu</Label>
           <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
-            minLength={6} data-testid="register-password-input" className="bg-[#18181b] border-zinc-800" />
+            minLength={6} data-testid="register-password-input" className="bg-[var(--panel)] border-[var(--border)]" />
         </div>
         {error && <p className="text-sm text-red-400" data-testid="register-error">{error}</p>}
         <Button type="submit" disabled={loading} data-testid="register-submit"
           className="w-full bg-blue-600 hover:bg-blue-500 text-white">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Tạo tài khoản
         </Button>
-        <p className="text-center text-sm text-zinc-400">
+        <p className="text-center text-sm text-[var(--muted)]">
           Đã có tài khoản?{" "}
           <Link to="/login" className="text-blue-400 hover:text-blue-300" data-testid="to-login">Đăng nhập</Link>
         </p>

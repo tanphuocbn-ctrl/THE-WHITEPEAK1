@@ -50,23 +50,23 @@ export default function Projects() {
                 <Plus className="mr-2 h-4 w-4" /> Dự án mới
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#18181b] border-zinc-800">
+            <DialogContent className="bg-[var(--panel)] border-[var(--border)]">
               <DialogHeader><DialogTitle className="font-head">Tạo dự án mới</DialogTitle></DialogHeader>
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
                   <Label>Tên dự án</Label>
                   <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    data-testid="project-title-input" className="bg-[#0f0f11] border-zinc-800" />
+                    data-testid="project-title-input" className="bg-[var(--panel-2)] border-[var(--border)]" />
                 </div>
                 <div className="space-y-2">
                   <Label>Mã dự án</Label>
                   <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                    placeholder="VD: PRJ-01" data-testid="project-code-input" className="bg-[#0f0f11] border-zinc-800 font-mono" />
+                    placeholder="VD: PRJ-01" data-testid="project-code-input" className="bg-[var(--panel-2)] border-[var(--border)] font-mono" />
                 </div>
                 <div className="space-y-2">
                   <Label>Mô tả</Label>
                   <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    data-testid="project-desc-input" className="bg-[#0f0f11] border-zinc-800" />
+                    data-testid="project-desc-input" className="bg-[var(--panel-2)] border-[var(--border)]" />
                 </div>
               </div>
               <DialogFooter>
@@ -81,28 +81,28 @@ export default function Projects() {
       </div>
 
       {loading ? (
-        <div className="flex h-40 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>
+        <div className="flex h-40 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[var(--muted-2)]" /></div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-800 py-20 text-center">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] py-20 text-center">
           <FolderKanban className="h-10 w-10 text-zinc-700 mb-3" />
-          <p className="text-zinc-400">Chưa có dự án nào.</p>
+          <p className="text-[var(--muted)]">Chưa có dự án nào.</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((p) => (
             <Link key={p.id} to={`/projects/${p.id}`} data-testid={`project-card-${p.code}`}
-              className="group rounded-lg border border-zinc-800/80 bg-[#18181b] overflow-hidden hover:border-zinc-700 transition-colors">
-              <div className="h-32 bg-zinc-900 overflow-hidden relative">
+              className="group rounded-lg border border-[var(--border)] bg-[var(--panel)] overflow-hidden hover:border-[var(--border)] transition-colors">
+              <div className="h-32 bg-[var(--panel)] overflow-hidden relative">
                 {p.cover_url && <img src={p.cover_url} alt="" className="h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />}
-                <span className="absolute top-3 right-3 rounded-full border border-zinc-700 bg-black/60 px-2 py-0.5 text-xs backdrop-blur">
+                <span className="absolute top-3 right-3 rounded-full border border-[var(--border)] bg-black/60 px-2 py-0.5 text-xs backdrop-blur">
                   {p.status === "active" ? "Đang chạy" : "Lưu trữ"}
                 </span>
               </div>
               <div className="p-4">
-                <p className="font-mono text-xs text-zinc-500">{p.code}</p>
+                <p className="font-mono text-xs text-[var(--muted-2)]">{p.code}</p>
                 <h3 className="font-head font-semibold mt-1 truncate">{p.title}</h3>
-                <p className="mt-1 text-sm text-zinc-500 line-clamp-2">{p.description}</p>
-                <p className="mt-3 text-xs text-zinc-600">{p.members?.length || 0} thành viên</p>
+                <p className="mt-1 text-sm text-[var(--muted-2)] line-clamp-2">{p.description}</p>
+                <p className="mt-3 text-xs text-[var(--muted-2)]">{p.members?.length || 0} thành viên</p>
               </div>
             </Link>
           ))}

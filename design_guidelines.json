@@ -1,126 +1,154 @@
 {
-  "theme": "dark",
   "typography": {
     "headings": {
-      "fontFamily": "Manrope, sans-serif",
-      "strategy": "Expressive and modern. Use tracking-tight for large headings to maintain a cinematic and professional feel.",
-      "weights": ["400", "500", "600", "700"]
+      "family": "Manrope",
+      "strategy": "Bold, clean, tight tracking for cinematic authority.",
+      "sizes": {
+        "h1": "text-3xl sm:text-4xl font-bold tracking-tight",
+        "h2": "text-2xl sm:text-3xl font-semibold tracking-tight",
+        "h3": "text-xl sm:text-2xl font-medium",
+        "h4": "text-lg font-medium"
+      }
     },
     "body": {
-      "fontFamily": "IBM Plex Sans, sans-serif",
-      "strategy": "Clean, highly readable text for node descriptions, toolbars, and metadata.",
-      "weights": ["400", "500"]
+      "family": "IBM Plex Sans",
+      "strategy": "Highly legible, neutral, perfect for data-dense interfaces."
     },
     "mono": {
-      "fontFamily": "JetBrains Mono, monospace",
-      "strategy": "Use for technical details, timestamps, shot numbers, and tags inside nodes for a tech-forward look."
-    }
+      "family": "JetBrains Mono",
+      "strategy": "Used strictly for data points, KPI numbers, dates, and chart axes to provide a technical, production-ready feel."
+    },
+    "rules": [
+      "No generic fonts for headings. Use Manrope.",
+      "Data metrics and numeric KPIs MUST use JetBrains Mono.",
+      "Overlines and small labels MUST be uppercase, tiny, wide spacing (tracking-[0.1em])."
+    ]
   },
   "colors": {
-    "background": {
-      "canvas": "#09090b",
-      "panel": "#18181b",
-      "node": "#27272a",
-      "frame": "rgba(24, 24, 27, 0.4)",
-      "scrim": "rgba(9, 9, 11, 0.8)"
+    "strategy": "Cinematic Swiss & High-Contrast. Harmonious and professional.",
+    "variables_structure": "Define these exactly in index.css as requested.",
+    "light_mode": {
+      "--bg": "#FAFAFA",
+      "--panel": "#FFFFFF",
+      "--panel-2": "#F4F4F5",
+      "--border": "#E4E4E7",
+      "--text": "#09090B",
+      "--muted": "#71717A",
+      "--muted-2": "#A1A1AA",
+      "--accent": "#2563EB",
+      "--chart-1": "#0EA5E9",
+      "--chart-2": "#8B5CF6",
+      "--chart-3": "#F59E0B",
+      "--chart-4": "#10B981",
+      "--chart-5": "#F43F5E",
+      "--chart-6": "#64748B"
     },
-    "border": {
-      "subtle": "#27272a",
-      "medium": "#3f3f46",
-      "focus": "#3b82f6"
+    "dark_mode": {
+      "--bg": "#0C0C0E",
+      "--panel": "#141417",
+      "--panel-2": "#1D1D21",
+      "--border": "#27272A",
+      "--text": "#F4F4F5",
+      "--muted": "#A1A1AA",
+      "--muted-2": "#71717A",
+      "--accent": "#3B82F6",
+      "--chart-1": "#38BDF8",
+      "--chart-2": "#A78BFA",
+      "--chart-3": "#FBBF24",
+      "--chart-4": "#34D399",
+      "--chart-5": "#FB7185",
+      "--chart-6": "#94A3B8"
     },
-    "text": {
-      "primary": "#fafafa",
-      "secondary": "#a1a1aa",
-      "accent": "#60a5fa"
-    },
-    "accents": {
-      "primary": "#3b82f6",
-      "hover": "#2563eb",
-      "selection": "#60a5fa"
-    }
+    "usage": [
+      "Map Tailwind config to these exact CSS variables.",
+      "Use var(--bg) for the app background.",
+      "Use var(--panel) for cards and main surfaces.",
+      "Use var(--border) for 1px solid borders on cards/panels.",
+      "Never use pure black or pure white in dark mode."
+    ]
   },
   "visual_enhancers": {
-    "shadows": "In dark mode, rely on 1px borders (e.g., border-zinc-800) and very subtle ambient shadows (shadow-xl shadow-black/50) to separate elevated panels from the canvas. Avoid heavy, soft drop shadows.",
-    "glassmorphism": "For floating toolbars, use a dark glass effect: bg-zinc-900/80 backdrop-blur-xl border border-zinc-800.",
-    "selection_states": "High-contrast outlines (ring-2 ring-blue-500) for selected nodes. Nodes on hover should translate slightly (-translate-y-0.5) with a border brightness increase.",
-    "canvas_background": "Implement a subtle dot or grid pattern on the canvas (e.g., bg-dot-white/[0.05]) to give users a sense of scale and infinite space."
-  },
-  "component_specifics": {
-    "toolbar": {
-      "layout": "Floating panel, center-bottom or middle-left. Pill-shaped or sharply rounded (rounded-xl), densely packed icons with tooltips.",
-      "style": "bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-2xl p-2 flex gap-2"
-    },
-    "nodes": {
-      "general": "All nodes should have rounded-lg or rounded-xl corners, border border-zinc-800, overflow-hidden.",
-      "frame_group": "Large container nodes acting as 'Scenes'. They should have a semi-transparent background (bg-zinc-900/40), a dashed or solid colored border (e.g., border-zinc-700), and a bold Manrope heading in the top-left corner.",
-      "media_image": "Frameless or thin-framed image tiles (Figma moodboard style). Images must use object-cover, rounded-md, with no awkward cropping.",
-      "character_setting": "Card with a thumbnail image on top, followed by IBM Plex Sans title and JetBrains Mono tags (e.g., INT. DAY).",
-      "comment": "Sticky note aesthetic but adapted for dark mode. Use a very dim tinted background (e.g., dark blue/yellow tint: bg-blue-950/30) with a left color bar.",
-      "edges": "Smooth bezier or step paths. Stroke should be zinc-600. When selected, stroke changes to blue-500."
+    "surfaces": "Dashboard Cards: Flat background (bg-panel), 1px subtle border (border-border), max 8px border-radius.",
+    "glassmorphism": "Use only for sticky headers or dropdowns: backdrop-blur-xl bg-panel/80. No completely transparent backgrounds.",
+    "shadows": {
+      "light": "shadow-sm on panels, shadow-md on hover for interactive cards.",
+      "dark": "Avoid heavy shadows in dark mode; rely on 1px borders to define edges."
     }
   },
-  "grids_and_layouts": {
-    "canvas_layout": "Full viewport w-screen h-screen relative layout. Toolbars and property sidebars are absolutely positioned over the canvas with z-50.",
-    "node_layout": "Inside 'Frame/Group' nodes, media images can be tiled using a grid layout (grid-cols-2 or grid-cols-3) to mimic a moodboard seamlessly.",
-    "sidebar": "If editing a node, slide in a properties panel from the right: w-80 bg-zinc-900 border-l border-zinc-800 h-full p-4."
+  "components": {
+    "charts": {
+      "library": "Recharts",
+      "types": [
+        "Shot-status distribution: Donut chart (PieChart with innerRadius).",
+        "Project progress: Horizontal bar charts (BarChart with layout='vertical').",
+        "Weekly KPIs: Sparklines (tiny LineChart or BarChart) inside Stat Cards.",
+        "Weekly versions/approved/returned: Stacked or grouped BarChart.",
+        "Staffing load: AreaChart or composed chart."
+      ],
+      "styling": "Use CSS variables var(--chart-1) etc. for fill/stroke. Remove default CartesianGrid or make it highly transparent. Use JetBrains Mono for axes."
+    },
+    "ui_components": "Use shadcn/ui. Ensure Card components are flat with borders. Implement a Theme Toggle (Sun/Moon icon) in the top nav."
+  },
+  "grids_layouts": {
+    "dashboard": "MODE B: High Density Grid. grid-cols-1 md:grid-cols-3 lg:grid-cols-4. Tight gaps (gap-4 or gap-6).",
+    "spacing": "Generous internal padding for panels (p-6). Use optical alignment.",
+    "hierarchy": "Top Nav (with Theme Toggle) -> Page Header (H1 + Actions) -> KPI Row (col-span-1 each) -> Main Charts (col-span-2 or 3) -> Side Lists (col-span-1 row-span-2)."
   },
   "motion": {
-    "interactions": "Use Framer Motion or equivalent for smooth pan/zoom easing. Toolbar actions should have scale-95 on tap and scale-105 on hover.",
-    "transitions": "Node selection and border color changes must transition smoothly (transition-colors duration-200)."
+    "interactions": "Hover states on all interactive elements. Subtle -translate-y-[2px] on card hover. Transition transform and colors."
   },
   "accessibility": {
-    "testing": "All interactive elements (toolbar buttons, nodes, canvas, zoom controls) MUST have 'data-testid' attributes (e.g., 'data-testid=\"canvas-zoom-in\"').",
-    "contrast": "Ensure text over images has a gradient scrim or text-shadow. Normal text against #18181b or #27272a must be WCAG AA compliant (#a1a1aa or lighter)."
+    "contrast": "Ensure text meets APCA/WCAG standards.",
+    "focus": "focus-visible:ring-2 focus-visible:ring-accent.",
+    "testing": "All interactive elements MUST have data-testid attributes."
   },
-  "image_urls": [
-    {
-      "url": "https://images.unsplash.com/photo-1505274664176-44ccaa7969a8",
-      "category": "Character Portrait",
-      "description": "Close-up green eye in shadows, use for character nodes."
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1776197739075-e492fcd2cb46",
-      "category": "Character Portrait",
-      "description": "Man with dark shadows, use for moodboard characters."
-    },
-    {
-      "url": "https://images.pexels.com/photos/39150734/pexels-photo-39150734.jpeg",
-      "category": "Character Portrait",
-      "description": "Gothic style woman in forest, cinematic."
-    },
-    {
-      "url": "https://images.unsplash.com/photo-1592685530107-f2227c2c6bb3",
-      "category": "Setting / Landscape",
-      "description": "Cinematic landscape shot with car, use for location/setting nodes."
-    },
-    {
-      "url": "https://images.pexels.com/photos/13812371/pexels-photo-13812371.jpeg",
-      "category": "Setting / Landscape",
-      "description": "Film crew in mountain landscape, misty scenery."
-    },
-    {
-      "url": "https://images.pexels.com/photos/918281/pexels-photo-918281.jpeg",
-      "category": "Props / Meta",
-      "description": "Film clapperboard, useful for general production metadata nodes."
-    }
+  "media": {
+    "avatars": [
+      {
+        "url": "https://images.unsplash.com/photo-1532123675048-773bd75df1b4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBjaW5lbWF0aWMlMjBhdmF0YXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3ODk5MDQyMjR8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Director Avatar"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBjaW5lbWF0aWMlMjBhdmF0YXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3ODk5MDQyMjR8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Producer Avatar"
+      }
+    ],
+    "posters": [
+      {
+        "url": "https://images.unsplash.com/photo-1616530940355-351fabd9524b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxjaW5lbWF0aWMlMjBtb3ZpZSUyMHBvc3RlciUyMHRodW1ibmFpbHxlbnwwfHx8fDE3ODk5MDQyMjR8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Project Thumbnail 1"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1701275998609-119e2c09f443?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwyfHxjaW5lbWF0aWMlMjBtb3ZpZSUyMHBvc3RlciUyMHRodW1ibmFpbHxlbnwwfHx8fDE3ODk5MDQyMjR8MA&ixlib=rb-4.1.0&q=85",
+        "category": "Project Thumbnail 2"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "1. Setup standard CSS variables in index.css based on the exact hex codes provided for BOTH :root (light) and .dark (dark). Do not use Tailwind's default slate/zinc for custom properties unless specified.",
+    "2. Implement a Theme Provider and Toggle in the Top Navigation to allow switching between Light and Dark mode.",
+    "3. Build the Dashboard using Recharts: implement a Donut chart for 'Shot-status', a horizontal bar chart for 'Project progress', and a composed/bar chart for 'Weekly versions'. Use the --chart-* variables for colors.",
+    "4. Apply the provided JetBrains Mono font for all numbers in charts and KPI cards. Apply Manrope for headings.",
+    "5. Ensure all Card components use 'bg-panel' and 'border-border'. Keep dark mode surfaces premium (no excessive shadow).",
+    "6. Build the 'Weekly Report' and 'Staffing calendar' sections using high-density grid layouts (MODE B)."
   ],
-  "libraries_and_steps": {
-    "canvas": "Use standard infinite canvas libraries like React Flow. If custom, implement zoom/pan with d3-zoom or react-zoom-pan-pinch.",
-    "icons": "Use lucide-react for all toolbar and UI icons."
-  },
-  "instructions_to_main_agent": {
-    "setup": "Redesign the Canvas page (/projects/:id/canvas) to look like a premium Figma/FigJam board in dark mode.",
-    "features": "Implement drag/move/select, smooth zooming (fit-to-screen), and node connections. The core addition is the 'Frame' node, which acts as a visual container grouping other nodes (like Figma frames).",
-    "aesthetic": "Strictly stick to the dark theme (zinc-950 canvas, zinc-900 panels) with 1px border-zinc-800 to separate elements. No heavy shadows.",
-    "testing": "Ensure all nodes, edges, and controls have stable data-testid attributes.",
-    "components": "Do not use Shadcn 'Card' for the nodes if it enforces padding; nodes need to be edge-to-edge for media images. Build custom raw div nodes with absolute layout for React Flow (or equivalent)."
-  },
-  "universal_guidelines_for_main_agent": [
-    "Do not converge toward generic 'AI slop'. Use layers, subtle borders, and precise spacing.",
-    "Never use pure black or pure white unless for extreme contrast elements. Stick to the zinc scale.",
-    "Ensure the infinite canvas does not trap scroll uncontrollably; use standard spacebar+drag or middle-click panning.",
-    "All modals, toolbars, and popovers should have transparent blurred backgrounds (glassmorphism) without full transparency. (e.g., bg-zinc-900/80 backdrop-blur-md).",
-    "Missing placeholder images MUST use the provided URLs from image_urls, never text placeholders."
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "You tend to converge toward generic, 'on distribution' outputs. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur) for sticky navs.",
+    "You MUST NOT apply universal transition (e.g., transition: all). Always add transitions for specific interactive elements.",
+    "You MUST NOT center align the app container.",
+    "Always use modern button styles like pill-shaped or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Create new components that match the style and conventions of existing components when needed.",
+    "Use sonner for toasts (located in /app/src/components/ui/sonner.tsx)."
+  ],
+  "GENERAL UI UX DESIGN GUIDELINES": [
+    "All interactive and key informational elements MUST include a data-testid attribute to facilitate robust automated testing."
   ]
 }

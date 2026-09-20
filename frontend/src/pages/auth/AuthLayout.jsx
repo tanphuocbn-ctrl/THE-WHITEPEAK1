@@ -2,8 +2,8 @@ import { Film } from "lucide-react";
 
 export default function AuthLayout({ title, subtitle, children }) {
   return (
-    <div className="flex min-h-screen bg-[#09090b] text-zinc-100">
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden border-r border-zinc-800/80">
+    <div className="flex min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden border-r border-[var(--border)]">
         <img
           src="https://images.unsplash.com/photo-1612544409025-e1f6a56c1152?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxjaW5lbWF0aWMlMjBmaWxtJTIwc2V0JTIwcHJvZHVjdGlvbnxlbnwwfHx8fDE3ODk4ODQzNTl8MA&ixlib=rb-4.1.0&q=85"
           alt="Film set"
@@ -18,7 +18,7 @@ export default function AuthLayout({ title, subtitle, children }) {
           <h2 className="font-head text-4xl font-extrabold leading-tight max-w-md">
             Từ kịch bản đến bản dựng cuối, quản lý tập trung.
           </h2>
-          <p className="mt-4 text-zinc-400 max-w-md text-sm">
+          <p className="mt-4 text-[var(--muted)] max-w-md text-sm">
             Phân quyền theo vai trò · Versioning bất biến · Quy trình duyệt & trả hàng · Lịch sử đầy đủ.
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function AuthLayout({ title, subtitle, children }) {
             <span className="font-head text-lg font-bold">Film Studio Manager</span>
           </div>
           <h1 className="font-head text-2xl font-bold tracking-tight">{title}</h1>
-          {subtitle && <p className="mt-2 text-sm text-zinc-400">{subtitle}</p>}
+          {subtitle && <p className="mt-2 text-sm text-[var(--muted)]">{subtitle}</p>}
           <div className="mt-8">{children}</div>
         </div>
       </div>

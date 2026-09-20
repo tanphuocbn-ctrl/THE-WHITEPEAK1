@@ -59,25 +59,25 @@ export default function ShotSheet({ projectId, shotId, myRole, members, onClose,
 
   return (
     <Sheet open onOpenChange={(o) => !o && onClose()}>
-      <SheetContent side="right" className="w-full sm:max-w-xl bg-[#111113] border-zinc-800 p-0 overflow-y-auto thin-scroll" data-testid="shot-sheet">
+      <SheetContent side="right" className="w-full sm:max-w-xl bg-[var(--panel)] border-[var(--border)] p-0 overflow-y-auto thin-scroll" data-testid="shot-sheet">
         {loading || !shot ? (
           <>
             <SheetHeader className="sr-only"><SheetTitle>Chi tiết shot</SheetTitle></SheetHeader>
-            <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>
+            <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[var(--muted-2)]" /></div>
           </>
         ) : (
           <>
-            <SheetHeader className="border-b border-zinc-800/80 p-5">
+            <SheetHeader className="border-b border-[var(--border)] p-5">
               <div className="flex items-center gap-3">
                 <span className="font-mono text-sm text-blue-400">{shot.code}</span>
                 <StatusPill status={shot.status} />
               </div>
               <SheetTitle className="font-head text-left text-xl">{shot.title}</SheetTitle>
-              <p className="text-sm text-zinc-500 text-left">{shot.shot_type || "—"} · Hạn: {fmtDate(shot.deadline)} · Giao cho: {shot.assignee_name || "chưa giao"}</p>
+              <p className="text-sm text-[var(--muted-2)] text-left">{shot.shot_type || "—"} · Hạn: {fmtDate(shot.deadline)} · Giao cho: {shot.assignee_name || "chưa giao"}</p>
             </SheetHeader>
 
             <Tabs defaultValue="versions" className="p-5">
-              <TabsList className="bg-[#18181b] border border-zinc-800">
+              <TabsList className="bg-[var(--panel)] border border-[var(--border)]">
                 <TabsTrigger value="versions" data-testid="tab-versions">Phiên bản</TabsTrigger>
                 <TabsTrigger value="review" data-testid="tab-review">Duyệt</TabsTrigger>
                 <TabsTrigger value="assign" data-testid="tab-assign">Phân công</TabsTrigger>
@@ -142,19 +142,19 @@ function VersionsTab({ projectId, shot, versions, myRole, user, onChanged }) {
   return (
     <div className="space-y-4">
       {canUpload && (
-        <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-4">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
           <Label className="text-sm">Nộp phiên bản mới (versioning bất biến)</Label>
           <input ref={inputRef} type="file" onChange={(e) => setFile(e.target.files?.[0] || null)}
             data-testid="version-file-input"
-            className="mt-2 block w-full text-sm text-zinc-400 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-blue-500" />
+            className="mt-2 block w-full text-sm text-[var(--muted)] file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-blue-500" />
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ghi chú phiên bản (tuỳ chọn)"
-            data-testid="version-note-input" className="mt-2 bg-[#0f0f11] border-zinc-800 text-sm" />
+            data-testid="version-note-input" className="mt-2 bg-[var(--panel-2)] border-[var(--border)] text-sm" />
           {progress !== null && (
             <div className="mt-3">
-              <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-[var(--panel-2)] overflow-hidden">
                 <div className="h-full bg-blue-500 transition-all" style={{ width: `${progress}%` }} />
               </div>
-              <p className="mt-1 text-xs text-zinc-500">{progress}% (resumable/multipart)</p>
+              <p className="mt-1 text-xs text-[var(--muted-2)]">{progress}% (resumable/multipart)</p>
             </div>
           )}
           <Button onClick={doUpload} disabled={!file || progress !== null} data-testid="upload-version-btn"
@@ -166,22 +166,22 @@ function VersionsTab({ projectId, shot, versions, myRole, user, onChanged }) {
 
       <div className="space-y-2">
         {versions.length === 0 ? (
-          <p className="text-sm text-zinc-500 py-4 text-center">Chưa có phiên bản nào được nộp.</p>
+          <p className="text-sm text-[var(--muted-2)] py-4 text-center">Chưa có phiên bản nào được nộp.</p>
         ) : versions.map((v) => (
           <div key={v.id} data-testid={`version-row-${v.version_number}`}
-            className="flex items-center gap-3 rounded-lg border border-zinc-800/80 bg-[#18181b] p-3">
-            <FileVideo className="h-5 w-5 text-zinc-500 shrink-0" />
+            className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
+            <FileVideo className="h-5 w-5 text-[var(--muted-2)] shrink-0" />
             <div className="flex-1 overflow-hidden">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-sm text-zinc-200">v{v.version_number}</span>
+                <span className="font-mono text-sm text-[var(--text)]">v{v.version_number}</span>
                 {v.id === shot.approved_version_id && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
                 {v.status === "rejected" && <XCircle className="h-4 w-4 text-red-400" />}
                 {v.id === shot.latest_version_id && <span className="text-xs text-blue-400">mới nhất</span>}
               </div>
-              <p className="truncate text-xs text-zinc-500">{v.original_filename} · {fmtBytes(v.size)} · {v.uploaded_by_name}</p>
+              <p className="truncate text-xs text-[var(--muted-2)]">{v.original_filename} · {fmtBytes(v.size)} · {v.uploaded_by_name}</p>
             </div>
             <Button size="sm" variant="ghost" onClick={() => download(v)} data-testid={`download-v${v.version_number}`}
-              className="text-zinc-400 hover:text-zinc-100"><Download className="h-4 w-4" /></Button>
+              className="text-[var(--muted)] hover:text-[var(--text)]"><Download className="h-4 w-4" /></Button>
           </div>
         ))}
       </div>
@@ -249,32 +249,32 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
   return (
     <div className="space-y-4">
       {isVideo && (
-        <div className="rounded-lg overflow-hidden border border-zinc-800/80 bg-black">
+        <div className="rounded-lg overflow-hidden border border-[var(--border)] bg-black">
           {videoUrl ? (
             <video ref={videoRef} src={videoUrl} controls className="w-full max-h-72 bg-black" data-testid="review-video" />
           ) : (
-            <div className="flex h-40 items-center justify-center text-sm text-zinc-500"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang tải video…</div>
+            <div className="flex h-40 items-center justify-center text-sm text-[var(--muted-2)]"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang tải video…</div>
           )}
         </div>
       )}
       {canReview && latest ? (
-        <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-4">
-          <p className="text-sm text-zinc-300 mb-3">Duyệt phiên bản <span className="font-mono text-blue-400">v{latest.version_number}</span></p>
-          <Label className="text-xs text-zinc-400">Phản hồi kèm timecode</Label>
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+          <p className="text-sm text-[var(--muted)] mb-3">Duyệt phiên bản <span className="font-mono text-blue-400">v{latest.version_number}</span></p>
+          <Label className="text-xs text-[var(--muted)]">Phản hồi kèm timecode</Label>
           <div className="mt-2 space-y-2">
             {comments.map((c, i) => (
               <div key={i} className="flex gap-2">
                 <Input value={c.timecode} onChange={(e) => { const n = [...comments]; n[i].timecode = e.target.value; setComments(n); }}
-                  placeholder="00:12" data-testid={`tc-time-${i}`} className="w-24 bg-[#0f0f11] border-zinc-800 font-mono text-sm" />
+                  placeholder="00:12" data-testid={`tc-time-${i}`} className="w-24 bg-[var(--panel-2)] border-[var(--border)] font-mono text-sm" />
                 {isVideo && (
                   <Button type="button" size="icon" variant="ghost" onClick={() => captureTime(i)} title="Lấy thời điểm hiện tại của video"
                     data-testid={`tc-capture-${i}`} className="text-blue-400 shrink-0"><Clock className="h-4 w-4" /></Button>
                 )}
                 <Input value={c.text} onChange={(e) => { const n = [...comments]; n[i].text = e.target.value; setComments(n); }}
-                  placeholder="Ghi chú tại timecode này" data-testid={`tc-text-${i}`} className="flex-1 bg-[#0f0f11] border-zinc-800 text-sm" />
+                  placeholder="Ghi chú tại timecode này" data-testid={`tc-text-${i}`} className="flex-1 bg-[var(--panel-2)] border-[var(--border)] text-sm" />
                 {comments.length > 1 && (
                   <Button size="icon" variant="ghost" onClick={() => setComments(comments.filter((_, j) => j !== i))}
-                    className="text-zinc-500"><Trash2 className="h-4 w-4" /></Button>
+                    className="text-[var(--muted-2)]"><Trash2 className="h-4 w-4" /></Button>
                 )}
               </div>
             ))}
@@ -282,7 +282,7 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
           <Button size="sm" variant="ghost" onClick={() => setComments([...comments, { timecode: "", text: "" }])}
             data-testid="add-timecode-btn" className="mt-2 text-blue-400"><Plus className="mr-1 h-3.5 w-3.5" /> Thêm timecode</Button>
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Nhận xét chung"
-            data-testid="review-note-input" className="mt-2 bg-[#0f0f11] border-zinc-800 text-sm" />
+            data-testid="review-note-input" className="mt-2 bg-[var(--panel-2)] border-[var(--border)] text-sm" />
           <div className="mt-3 flex gap-2">
             <Button onClick={() => decide("pass")} disabled={busy} data-testid="review-pass-btn"
               className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white">
@@ -295,7 +295,7 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
           </div>
         </div>
       ) : !latest ? (
-        <div className="flex items-center gap-2 rounded-lg border border-zinc-800/80 bg-[#18181b] p-4 text-sm text-zinc-400">
+        <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 text-sm text-[var(--muted)]">
           <AlertTriangle className="h-4 w-4 text-amber-400" /> Chưa có phiên bản nào để duyệt.
         </div>
       ) : null}
@@ -303,18 +303,18 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
       <div className="space-y-2">
         <p className="overline">Lịch sử duyệt</p>
         {reviews.length === 0 ? (
-          <p className="text-sm text-zinc-500 py-2">Chưa có lượt duyệt.</p>
+          <p className="text-sm text-[var(--muted-2)] py-2">Chưa có lượt duyệt.</p>
         ) : reviews.map((r) => (
           <div key={r.id} data-testid={`review-row-${r.id}`}
-            className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-3">
+            className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
             <div className="flex items-center gap-2">
               {r.decision === "pass"
                 ? <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                 : <XCircle className="h-4 w-4 text-red-400" />}
-              <span className="text-sm text-zinc-200">{r.decision === "pass" ? "Đạt" : "Không đạt"} · v{r.version_number}</span>
-              <span className="ml-auto text-xs text-zinc-500">{r.reviewer_name}</span>
+              <span className="text-sm text-[var(--text)]">{r.decision === "pass" ? "Đạt" : "Không đạt"} · v{r.version_number}</span>
+              <span className="ml-auto text-xs text-[var(--muted-2)]">{r.reviewer_name}</span>
             </div>
-            {r.note && <p className="mt-2 text-sm text-zinc-400">{r.note}</p>}
+            {r.note && <p className="mt-2 text-sm text-[var(--muted)]">{r.note}</p>}
             {r.comments?.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {r.comments.map((c, i) => (
@@ -325,7 +325,7 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
                     ) : (
                       <span className="font-mono text-amber-400">{c.timecode || "—"}</span>
                     )}
-                    <span className="text-zinc-400">{c.text}</span>
+                    <span className="text-[var(--muted)]">{c.text}</span>
                   </li>
                 ))}
               </ul>
@@ -358,7 +358,7 @@ function AssignTab({ projectId, shot, members, myRole, user, onChanged }) {
   };
 
   if (!canAssign) {
-    return <p className="text-sm text-zinc-500">Bạn không có quyền phân công. Người phụ trách: {shot.assignee_name || "chưa giao"}.</p>;
+    return <p className="text-sm text-[var(--muted-2)]">Bạn không có quyền phân công. Người phụ trách: {shot.assignee_name || "chưa giao"}.</p>;
   }
 
   return (
@@ -366,8 +366,8 @@ function AssignTab({ projectId, shot, members, myRole, user, onChanged }) {
       <div className="space-y-2">
         <Label className="text-sm">Giao cho</Label>
         <Select value={assignee} onValueChange={setAssignee}>
-          <SelectTrigger data-testid="assignee-select" className="bg-[#18181b] border-zinc-800"><SelectValue /></SelectTrigger>
-          <SelectContent className="bg-[#18181b] border-zinc-800">
+          <SelectTrigger data-testid="assignee-select" className="bg-[var(--panel)] border-[var(--border)]"><SelectValue /></SelectTrigger>
+          <SelectContent className="bg-[var(--panel)] border-[var(--border)]">
             <SelectItem value="none">— Chưa giao —</SelectItem>
             {members.map((m) => <SelectItem key={m.user_id} value={m.user_id}>{m.name} ({m.role})</SelectItem>)}
           </SelectContent>
@@ -376,7 +376,7 @@ function AssignTab({ projectId, shot, members, myRole, user, onChanged }) {
       <div className="space-y-2">
         <Label className="text-sm">Deadline</Label>
         <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)}
-          data-testid="deadline-input" className="bg-[#18181b] border-zinc-800" />
+          data-testid="deadline-input" className="bg-[var(--panel)] border-[var(--border)]" />
       </div>
       <Button onClick={save} disabled={busy} data-testid="save-assign-btn" className="bg-blue-600 hover:bg-blue-500 text-white">
         {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Lưu phân công

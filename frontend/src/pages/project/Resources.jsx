@@ -102,7 +102,7 @@ export default function Resources() {
     catch (e) { toast.error(apiError(e)); } finally { setBuildBusy(false); }
   };
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>;
+  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[var(--muted-2)]" /></div>;
 
   return (
     <div className="animate-fade-up space-y-8" data-testid="resources-page">
@@ -110,7 +110,7 @@ export default function Resources() {
         <div>
           <p className="overline flex items-center gap-2"><Boxes className="h-3.5 w-3.5" /> Thư viện tài nguyên</p>
           <h1 className="font-head text-2xl font-extrabold tracking-tight mt-1">Nhân vật · Bối cảnh · Scene design</h1>
-          <p className="mt-1 text-sm text-zinc-400">Nhập tài nguyên, để AI phân bổ về từng scene, rồi dựng vào canvas.</p>
+          <p className="mt-1 text-sm text-[var(--muted)]">Nhập tài nguyên, để AI phân bổ về từng scene, rồi dựng vào canvas.</p>
         </div>
         {canWrite && (
           <div className="flex gap-2">
@@ -134,15 +134,15 @@ export default function Resources() {
       </div>
 
       {/* Scene mapping */}
-      <div className="rounded-lg border border-zinc-800/80 bg-[#18181b]">
-        <div className="border-b border-zinc-800/80 p-4">
-          <h3 className="font-head font-semibold flex items-center gap-2"><Clapperboard className="h-4 w-4 text-zinc-500" /> Phân bổ theo Scene ({scenes.length})</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">Gán nhân vật, bối cảnh & thiết kế cho từng cảnh. Bấm "Mở canvas" để xem moodboard riêng của cảnh.</p>
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <div className="border-b border-[var(--border)] p-4">
+          <h3 className="font-head font-semibold flex items-center gap-2"><Clapperboard className="h-4 w-4 text-[var(--muted-2)]" /> Phân bổ theo Scene ({scenes.length})</h3>
+          <p className="text-xs text-[var(--muted-2)] mt-0.5">Gán nhân vật, bối cảnh & thiết kế cho từng cảnh. Bấm "Mở canvas" để xem moodboard riêng của cảnh.</p>
         </div>
         {scenes.length === 0 ? (
-          <p className="p-6 text-sm text-zinc-500">Chưa có scene. Hãy tạo scene ở tab Cấu trúc hoặc nhập kịch bản.</p>
+          <p className="p-6 text-sm text-[var(--muted-2)]">Chưa có scene. Hãy tạo scene ở tab Cấu trúc hoặc nhập kịch bản.</p>
         ) : (
-          <div className="divide-y divide-zinc-800/60">
+          <div className="divide-y divide-[var(--border)]">
             {scenes.map((s) => {
               const sceneChars = (s.characters || []);
               const bg = bgs.find((b) => b.id === s.background_id);
@@ -151,29 +151,29 @@ export default function Resources() {
                   <div className="min-w-[150px] flex-1">
                     <span className="font-mono text-xs text-blue-400">{s.code}</span>
                     <p className="text-sm truncate">{s.title}</p>
-                    {s.location && <p className="text-[11px] text-zinc-500 truncate">📍 {s.location}</p>}
+                    {s.location && <p className="text-[11px] text-[var(--muted-2)] truncate">📍 {s.location}</p>}
                   </div>
 
                   {/* characters multi-select */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline" data-testid={`scene-chars-${s.id}`} disabled={!canWrite} className="h-8 w-44 justify-start border-zinc-800 bg-[#0f0f11] text-zinc-300">
+                      <Button size="sm" variant="outline" data-testid={`scene-chars-${s.id}`} disabled={!canWrite} className="h-8 w-44 justify-start border-[var(--border)] bg-[var(--panel-2)] text-[var(--muted)]">
                         <UsersIcon className="mr-1.5 h-3.5 w-3.5 text-amber-400" /> {sceneChars.length ? `${sceneChars.length} nhân vật` : "Chọn nhân vật"}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-zinc-900 border-zinc-800 max-h-64 overflow-y-auto">
+                    <DropdownMenuContent className="bg-[var(--panel)] border-[var(--border)] max-h-64 overflow-y-auto">
                       <DropdownMenuLabel>Nhân vật trong cảnh</DropdownMenuLabel>
-                      {chars.length === 0 ? <div className="px-2 py-1.5 text-xs text-zinc-500">Chưa có nhân vật</div> : chars.map((c) => (
+                      {chars.length === 0 ? <div className="px-2 py-1.5 text-xs text-[var(--muted-2)]">Chưa có nhân vật</div> : chars.map((c) => (
                         <DropdownMenuCheckboxItem key={c.id} checked={sceneChars.includes(c.id)} onCheckedChange={() => toggleSceneChar(s, c.id)}
-                          data-testid={`scene-char-opt-${s.id}-${c.id}`} className="focus:bg-zinc-800">{c.name}</DropdownMenuCheckboxItem>
+                          data-testid={`scene-char-opt-${s.id}-${c.id}`} className="focus:bg-[var(--panel-2)]">{c.name}</DropdownMenuCheckboxItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   {/* background select */}
                   <Select value={s.background_id || "none"} onValueChange={(v) => patchScene(s, { background_id: v === "none" ? "" : v })} disabled={!canWrite}>
-                    <SelectTrigger data-testid={`scene-bg-${s.id}`} className="h-8 w-40 bg-[#0f0f11] border-zinc-800"><SelectValue placeholder="Bối cảnh" /></SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-800">
+                    <SelectTrigger data-testid={`scene-bg-${s.id}`} className="h-8 w-40 bg-[var(--panel-2)] border-[var(--border)]"><SelectValue placeholder="Bối cảnh" /></SelectTrigger>
+                    <SelectContent className="bg-[var(--panel)] border-[var(--border)]">
                       <SelectItem value="none">— Không —</SelectItem>
                       {bgs.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}
                     </SelectContent>
@@ -181,7 +181,7 @@ export default function Resources() {
 
                   {/* design image */}
                   {canWrite && (
-                    <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-zinc-700 px-2 text-xs text-zinc-300 hover:border-pink-500/60" data-testid={`scene-design-label-${s.id}`}>
+                    <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-dashed border-[var(--border)] px-2 text-xs text-[var(--muted)] hover:border-pink-500/60" data-testid={`scene-design-label-${s.id}`}>
                       {s.design_media_id && mediaUrls[s.design_media_id]
                         ? <img src={mediaUrls[s.design_media_id]} alt="" className="h-5 w-5 rounded object-cover" />
                         : <Upload className="h-3.5 w-3.5 text-pink-400" />}
@@ -191,14 +191,14 @@ export default function Resources() {
                   )}
 
                   <Link to={`/projects/${projectId}/scenes/${s.id}/canvas`} data-testid={`scene-open-canvas-${s.id}`}
-                    className="inline-flex h-8 items-center gap-1 rounded-md bg-zinc-800 px-2.5 text-xs text-zinc-200 hover:bg-zinc-700">
+                    className="inline-flex h-8 items-center gap-1 rounded-md bg-[var(--panel-2)] px-2.5 text-xs text-[var(--text)] hover:bg-[var(--panel-2)]">
                     <ExternalLink className="h-3.5 w-3.5" /> Mở canvas
                   </Link>
 
                   {/* design note (full row) */}
                   {canWrite && (
                     <Textarea defaultValue={s.design_note || ""} onBlur={(e) => { if ((e.target.value || "") !== (s.design_note || "")) patchScene(s, { design_note: e.target.value }); }}
-                      placeholder="Ghi chú thiết kế cho cảnh…" data-testid={`scene-design-note-${s.id}`} rows={1} className="mt-1 w-full bg-[#0f0f11] border-zinc-800 text-sm" />
+                      placeholder="Ghi chú thiết kế cho cảnh…" data-testid={`scene-design-note-${s.id}`} rows={1} className="mt-1 w-full bg-[var(--panel-2)] border-[var(--border)] text-sm" />
                   )}
                 </div>
               );
@@ -213,37 +213,37 @@ export default function Resources() {
 function ResourceColumn({ kind, title, icon: Icon, accent, items, canWrite, mediaUrls, onAdd, onUpload, onDelete }) {
   const [name, setName] = useState("");
   return (
-    <div className="rounded-lg border border-zinc-800/80 bg-[#18181b]">
-      <div className="flex items-center justify-between border-b border-zinc-800/80 p-4">
-        <h3 className="font-head font-semibold flex items-center gap-2"><Icon className="h-4 w-4" style={{ color: accent }} /> {title} <span className="text-xs text-zinc-500">({items.length})</span></h3>
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+      <div className="flex items-center justify-between border-b border-[var(--border)] p-4">
+        <h3 className="font-head font-semibold flex items-center gap-2"><Icon className="h-4 w-4" style={{ color: accent }} /> {title} <span className="text-xs text-[var(--muted-2)]">({items.length})</span></h3>
       </div>
       {canWrite && (
-        <div className="flex gap-2 border-b border-zinc-800/60 p-3">
+        <div className="flex gap-2 border-b border-[var(--border)] p-3">
           <Input value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { onAdd(name); setName(""); } }}
-            placeholder={`Tên ${title.toLowerCase()}…`} data-testid={`add-${kind}-input`} className="h-9 bg-[#0f0f11] border-zinc-800" />
-          <Button onClick={() => { onAdd(name); setName(""); }} data-testid={`add-${kind}-btn`} className="h-9 bg-zinc-800 hover:bg-zinc-700 text-zinc-100"><Plus className="h-4 w-4" /></Button>
+            placeholder={`Tên ${title.toLowerCase()}…`} data-testid={`add-${kind}-input`} className="h-9 bg-[var(--panel-2)] border-[var(--border)]" />
+          <Button onClick={() => { onAdd(name); setName(""); }} data-testid={`add-${kind}-btn`} className="h-9 bg-[var(--panel-2)] hover:bg-[var(--panel-2)] text-[var(--text)]"><Plus className="h-4 w-4" /></Button>
         </div>
       )}
       {items.length === 0 ? (
-        <p className="p-6 text-sm text-zinc-500">Chưa có {title.toLowerCase()} nào.</p>
+        <p className="p-6 text-sm text-[var(--muted-2)]">Chưa có {title.toLowerCase()} nào.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3">
           {items.map((it) => (
-            <div key={it.id} className="group relative overflow-hidden rounded-lg border border-zinc-800 bg-[#0f0f11]" data-testid={`resource-${it.id}`}>
-              <div className="aspect-[4/3] w-full overflow-hidden bg-zinc-950">
+            <div key={it.id} className="group relative overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel-2)]" data-testid={`resource-${it.id}`}>
+              <div className="aspect-[4/3] w-full overflow-hidden bg-[var(--panel-2)]">
                 {it.media_id && mediaUrls[it.media_id]
                   ? <img src={mediaUrls[it.media_id]} alt={it.name} className="h-full w-full object-cover" />
                   : <div className="flex h-full items-center justify-center text-zinc-700"><ImageIcon className="h-6 w-6" /></div>}
               </div>
               <div className="flex items-center justify-between gap-1 p-2">
-                <span className="truncate text-xs text-zinc-200">{it.name}</span>
+                <span className="truncate text-xs text-[var(--text)]">{it.name}</span>
                 {canWrite && (
                   <div className="flex shrink-0 items-center gap-1">
-                    <label className="cursor-pointer text-zinc-500 hover:text-blue-400" title="Tải ảnh" data-testid={`resource-upload-${it.id}`}>
+                    <label className="cursor-pointer text-[var(--muted-2)] hover:text-blue-400" title="Tải ảnh" data-testid={`resource-upload-${it.id}`}>
                       <Upload className="h-3.5 w-3.5" />
                       <input type="file" accept="image/*" className="hidden" onChange={(e) => onUpload(it.id, e.target.files?.[0])} />
                     </label>
-                    <button onClick={() => onDelete(it.id)} data-testid={`resource-delete-${it.id}`} className="text-zinc-500 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => onDelete(it.id)} data-testid={`resource-delete-${it.id}`} className="text-[var(--muted-2)] hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 )}
               </div>

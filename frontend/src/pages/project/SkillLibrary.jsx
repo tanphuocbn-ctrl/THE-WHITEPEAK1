@@ -49,22 +49,22 @@ export default function SkillLibrary() {
     catch (e) { toast.error(apiError(e)); }
   };
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>;
+  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[var(--muted-2)]" /></div>;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 animate-fade-up">
-      <div className="rounded-lg border border-zinc-800/80 bg-[#111113]">
-        <div className="flex items-center justify-between border-b border-zinc-800/80 p-3">
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <div className="flex items-center justify-between border-b border-[var(--border)] p-3">
           <span className="overline">Thư viện Skill</span>
           {canWrite && <NewSkill projectId={projectId} onDone={load} />}
         </div>
         <div className="p-2 space-y-1 max-h-[70vh] overflow-y-auto thin-scroll">
-          {skills.length === 0 ? <p className="p-3 text-sm text-zinc-500">Chưa có skill nào.</p> : skills.map((s) => (
+          {skills.length === 0 ? <p className="p-3 text-sm text-[var(--muted-2)]">Chưa có skill nào.</p> : skills.map((s) => (
             <button key={s.id} onClick={() => open(s)} data-testid={`skill-${s.id}`}
-              className={`w-full rounded-md px-2.5 py-2 text-left transition-colors ${sel?.id === s.id ? "bg-[#27272a]" : "hover:bg-[#1c1c1f]"}`}>
+              className={`w-full rounded-md px-2.5 py-2 text-left transition-colors ${sel?.id === s.id ? "bg-[var(--panel-2)]" : "hover:bg-[var(--panel-2)]"}`}>
               <div className="flex items-center gap-2">
                 <span className={`rounded-full border px-1.5 py-0.5 text-[10px] ${CAT_CLS[s.category]}`}>{CATS[s.category]}</span>
-                <span className="text-xs text-zinc-500">v{s.current_version}</span>
+                <span className="text-xs text-[var(--muted-2)]">v{s.current_version}</span>
               </div>
               <p className="mt-1 truncate text-sm">{s.title}</p>
             </button>
@@ -73,38 +73,38 @@ export default function SkillLibrary() {
       </div>
 
       {!sel ? (
-        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-zinc-800 text-zinc-500"><BookOpen className="mr-2 h-5 w-5" /> Chọn một skill để xem và chỉnh sửa.</div>
+        <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-[var(--border)] text-[var(--muted-2)]"><BookOpen className="mr-2 h-5 w-5" /> Chọn một skill để xem và chỉnh sửa.</div>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5">
             <div className="flex items-start justify-between">
               <div>
                 <span className={`rounded-full border px-2 py-0.5 text-xs ${CAT_CLS[sel.category]}`}>{CATS[sel.category]}</span>
                 <h2 className="font-head text-xl font-bold mt-2">{sel.title}</h2>
-                {sel.description && <p className="text-sm text-zinc-400 mt-1">{sel.description}</p>}
+                {sel.description && <p className="text-sm text-[var(--muted)] mt-1">{sel.description}</p>}
               </div>
-              {canWrite && <Button size="sm" variant="ghost" onClick={() => del(sel.id)} className="text-zinc-500 hover:text-red-400"><Trash2 className="mr-1 h-4 w-4" /> Xóa</Button>}
+              {canWrite && <Button size="sm" variant="ghost" onClick={() => del(sel.id)} className="text-[var(--muted-2)] hover:text-red-400"><Trash2 className="mr-1 h-4 w-4" /> Xóa</Button>}
             </div>
             <div className="mt-4">
               <Label className="text-sm">Nội dung (phiên bản hiện tại v{sel.current_version})</Label>
               <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={10} disabled={!canWrite}
-                data-testid="skill-content" className="mt-2 bg-[#0f0f11] border-zinc-800 font-mono text-sm" />
+                data-testid="skill-content" className="mt-2 bg-[var(--panel-2)] border-[var(--border)] font-mono text-sm" />
               {canWrite && (
                 <div className="mt-3 flex gap-2">
-                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ghi chú phiên bản (tuỳ chọn)" data-testid="skill-version-note" className="bg-[#0f0f11] border-zinc-800" />
+                  <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ghi chú phiên bản (tuỳ chọn)" data-testid="skill-version-note" className="bg-[var(--panel-2)] border-[var(--border)]" />
                   <Button onClick={saveVersion} disabled={draft === sel.content} data-testid="skill-save-version" className="bg-blue-600 hover:bg-blue-500 text-white"><Save className="mr-1.5 h-4 w-4" /> Lưu bản mới</Button>
                 </div>
               )}
             </div>
           </div>
-          <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5">
             <p className="overline mb-3 flex items-center gap-2"><History className="h-3.5 w-3.5" /> Lịch sử phiên bản</p>
             <div className="space-y-2">
               {(sel.versions || []).map((v) => (
-                <div key={v.id} className="flex items-center gap-3 rounded-md border border-zinc-800 bg-[#0f0f11] p-2.5" data-testid={`skill-ver-${v.version_number}`}>
+                <div key={v.id} className="flex items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-2)] p-2.5" data-testid={`skill-ver-${v.version_number}`}>
                   <span className="font-mono text-sm text-blue-400">v{v.version_number}</span>
-                  <span className="flex-1 truncate text-sm text-zinc-400">{v.note || "—"}</span>
-                  <span className="text-xs text-zinc-500">{v.created_by_name} · {fmtDate(v.created_at)}</span>
+                  <span className="flex-1 truncate text-sm text-[var(--muted)]">{v.note || "—"}</span>
+                  <span className="text-xs text-[var(--muted-2)]">{v.created_by_name} · {fmtDate(v.created_at)}</span>
                   {canWrite && <Button size="sm" variant="ghost" onClick={() => { setDraft(v.content); toast.message(`Đã nạp nội dung v${v.version_number} vào ô soạn thảo`); }} className="text-blue-400">Nạp</Button>}
                 </div>
               ))}
@@ -128,17 +128,17 @@ function NewSkill({ projectId, onDone }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild><Button size="sm" variant="ghost" className="text-blue-400 h-7" data-testid="new-skill-btn"><Plus className="h-4 w-4" /></Button></DialogTrigger>
-      <DialogContent className="bg-[#18181b] border-zinc-800">
+      <DialogContent className="bg-[var(--panel)] border-[var(--border)]">
         <DialogHeader><DialogTitle className="font-head">Tạo Skill mới</DialogTitle></DialogHeader>
         <div className="space-y-3 py-2">
-          <div className="space-y-2"><Label>Tiêu đề</Label><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} data-testid="skill-title" className="bg-[#0f0f11] border-zinc-800" /></div>
+          <div className="space-y-2"><Label>Tiêu đề</Label><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} data-testid="skill-title" className="bg-[var(--panel-2)] border-[var(--border)]" /></div>
           <div className="space-y-2"><Label>Loại</Label>
             <Select value={f.category} onValueChange={(v) => setF({ ...f, category: v })}>
-              <SelectTrigger data-testid="skill-cat" className="bg-[#0f0f11] border-zinc-800"><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#18181b] border-zinc-800">{Object.entries(CATS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              <SelectTrigger data-testid="skill-cat" className="bg-[var(--panel-2)] border-[var(--border)]"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-[var(--panel)] border-[var(--border)]">{Object.entries(CATS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          <div className="space-y-2"><Label>Nội dung</Label><Textarea value={f.content} onChange={(e) => setF({ ...f, content: e.target.value })} rows={6} data-testid="skill-new-content" className="bg-[#0f0f11] border-zinc-800 font-mono text-sm" /></div>
+          <div className="space-y-2"><Label>Nội dung</Label><Textarea value={f.content} onChange={(e) => setF({ ...f, content: e.target.value })} rows={6} data-testid="skill-new-content" className="bg-[var(--panel-2)] border-[var(--border)] font-mono text-sm" /></div>
         </div>
         <DialogFooter><Button onClick={submit} disabled={busy || !f.title} data-testid="skill-create" className="bg-blue-600 hover:bg-blue-500 text-white">{busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Tạo</Button></DialogFooter>
       </DialogContent>

@@ -98,27 +98,27 @@ export default function ScriptImport() {
       <div className="space-y-4">
         {!diff ? (
           canWrite ? (
-            <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5">
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5">
               <h2 className="font-head text-lg font-bold mb-1">Nhập kịch bản</h2>
-              <p className="text-sm text-zinc-400 mb-4">Tải DOCX/PDF/TXT, nhập tay, hoặc để AI tách cảnh. Sau đó: staging → diff → chọn cảnh → xác nhận.</p>
+              <p className="text-sm text-[var(--muted)] mb-4">Tải DOCX/PDF/TXT, nhập tay, hoặc để AI tách cảnh. Sau đó: staging → diff → chọn cảnh → xác nhận.</p>
               <Tabs defaultValue="manual">
-                <TabsList className="bg-[#0f0f11] border border-zinc-800">
+                <TabsList className="bg-[var(--panel-2)] border border-[var(--border)]">
                   <TabsTrigger value="manual" data-testid="script-tab-manual">Nhập tay / AI</TabsTrigger>
                   <TabsTrigger value="upload" data-testid="script-tab-upload">Tải file</TabsTrigger>
                 </TabsList>
                 <TabsContent value="manual" className="mt-4">
                   <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={12}
                     placeholder={"NỘI. QUÁN CÀ PHÊ - NGÀY\nNhân vật A ngồi chờ...\n\nNGOẠI. ĐƯỜNG PHỐ - ĐÊM\n..."}
-                    data-testid="script-manual-input" className="bg-[#0f0f11] border-zinc-800 font-mono text-sm" />
+                    data-testid="script-manual-input" className="bg-[var(--panel-2)] border-[var(--border)] font-mono text-sm" />
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <Checkbox checked={useAI} onCheckedChange={(v) => setUseAI(!!v)} data-testid="use-ai-checkbox" />
-                      <span className="text-sm text-zinc-300 flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-violet-400" /> Tách bằng AI</span>
+                      <span className="text-sm text-[var(--muted)] flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-violet-400" /> Tách bằng AI</span>
                     </label>
                     {useAI && (
                       <Select value={provider} onValueChange={setProvider}>
-                        <SelectTrigger data-testid="ai-provider-select" className="w-48 bg-[#0f0f11] border-zinc-800 h-8"><SelectValue /></SelectTrigger>
-                        <SelectContent className="bg-[#18181b] border-zinc-800">
+                        <SelectTrigger data-testid="ai-provider-select" className="w-48 bg-[var(--panel-2)] border-[var(--border)] h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-[var(--panel)] border-[var(--border)]">
                           {PROVIDERS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
                         </SelectContent>
                       </Select>
@@ -133,41 +133,41 @@ export default function ScriptImport() {
                 <TabsContent value="upload" className="mt-4">
                   <input ref={fileRef} type="file" accept=".docx,.pdf,.txt" onChange={(e) => submitFile(e.target.files?.[0])}
                     data-testid="script-file-input"
-                    className="block w-full text-sm text-zinc-400 file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-blue-500" />
-                  {busy && <div className="mt-3 flex items-center gap-2 text-sm text-zinc-400"><Loader2 className="h-4 w-4 animate-spin" /> Đang xử lý...</div>}
+                    className="block w-full text-sm text-[var(--muted)] file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-blue-500" />
+                  {busy && <div className="mt-3 flex items-center gap-2 text-sm text-[var(--muted)]"><Loader2 className="h-4 w-4 animate-spin" /> Đang xử lý...</div>}
                 </TabsContent>
               </Tabs>
             </div>
           ) : (
-            <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5 text-sm text-zinc-400">Bạn không có quyền nhập kịch bản.</div>
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5 text-sm text-[var(--muted)]">Bạn không có quyền nhập kịch bản.</div>
           )
         ) : (
-          <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="font-head text-lg font-bold">Diff & chọn cảnh</h2>
-                <p className="text-sm text-zinc-400">{diff.summary.added} cảnh mới · {diff.summary.exists} đã tồn tại (không ghi đè) · chọn {selectedAdded}</p>
+                <p className="text-sm text-[var(--muted)]">{diff.summary.added} cảnh mới · {diff.summary.exists} đã tồn tại (không ghi đè) · chọn {selectedAdded}</p>
                 {diff.staging.cost_note && <p className="text-xs text-violet-400 mt-0.5">{diff.staging.cost_note}</p>}
               </div>
-              <Button variant="ghost" onClick={() => setDiff(null)} className="text-zinc-400" data-testid="diff-back">Đóng</Button>
+              <Button variant="ghost" onClick={() => setDiff(null)} className="text-[var(--muted)]" data-testid="diff-back">Đóng</Button>
             </div>
             <div className="space-y-2 max-h-[55vh] overflow-y-auto thin-scroll">
               {diff.diff.map((d, i) => {
                 const added = d.status === "added";
                 return (
                   <label key={i} data-testid={`diff-row-${d.code}`}
-                    className={`flex items-start gap-3 rounded-md border p-3 ${added ? "border-emerald-500/30 bg-emerald-500/10 cursor-pointer" : "border-zinc-800 bg-[#0f0f11] opacity-70"}`}>
+                    className={`flex items-start gap-3 rounded-md border p-3 ${added ? "border-emerald-500/30 bg-emerald-500/10 cursor-pointer" : "border-[var(--border)] bg-[var(--panel-2)] opacity-70"}`}>
                     {added ? (
                       <Checkbox checked={selected.has(d.code)} onCheckedChange={() => toggle(d.code)}
                         data-testid={`diff-check-${d.code}`} className="mt-0.5" />
                     ) : <span className="mt-0.5 h-4 w-4 shrink-0" />}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-zinc-400">{d.code}</span>
-                        <span className={`text-xs ${added ? "text-emerald-400" : "text-zinc-500"}`}>{added ? "＋ Mới" : "● Đã có"}</span>
+                        <span className="font-mono text-xs text-[var(--muted)]">{d.code}</span>
+                        <span className={`text-xs ${added ? "text-emerald-400" : "text-[var(--muted-2)]"}`}>{added ? "＋ Mới" : "● Đã có"}</span>
                       </div>
-                      <p className={`mt-1 text-sm ${added ? "text-emerald-200" : "text-zinc-400"}`}>{d.title}</p>
-                      {d.description && <p className="mt-1 text-xs text-zinc-500 line-clamp-2 whitespace-pre-line">{d.description}</p>}
+                      <p className={`mt-1 text-sm ${added ? "text-emerald-200" : "text-[var(--muted)]"}`}>{d.title}</p>
+                      {d.description && <p className="mt-1 text-xs text-[var(--muted-2)] line-clamp-2 whitespace-pre-line">{d.description}</p>}
                     </div>
                   </label>
                 );
@@ -188,14 +188,14 @@ export default function ScriptImport() {
         <p className="overline mb-3">Bản nhập gần đây</p>
         <div className="space-y-2">
           {stagings.length === 0 ? (
-            <p className="text-sm text-zinc-500">Chưa có bản nhập nào.</p>
+            <p className="text-sm text-[var(--muted-2)]">Chưa có bản nhập nào.</p>
           ) : stagings.map((s) => (
             <button key={s.id} onClick={() => openDiff(s.id)} data-testid={`staging-${s.id}`}
-              className="flex w-full items-center gap-3 rounded-lg border border-zinc-800/80 bg-[#18181b] p-3 text-left hover:border-zinc-700 transition-colors">
-              {String(s.source_type).startsWith("ai") ? <Sparkles className="h-4 w-4 text-violet-400 shrink-0" /> : <FileText className="h-4 w-4 text-zinc-500 shrink-0" />}
+              className="flex w-full items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 text-left hover:border-[var(--border)] transition-colors">
+              {String(s.source_type).startsWith("ai") ? <Sparkles className="h-4 w-4 text-violet-400 shrink-0" /> : <FileText className="h-4 w-4 text-[var(--muted-2)] shrink-0" />}
               <div className="flex-1 overflow-hidden">
                 <p className="truncate text-sm">{s.filename}</p>
-                <p className="text-xs text-zinc-500">{s.parsed_scenes?.length || 0} cảnh · {fmtDate(s.created_at)}</p>
+                <p className="text-xs text-[var(--muted-2)]">{s.parsed_scenes?.length || 0} cảnh · {fmtDate(s.created_at)}</p>
               </div>
               {s.status === "confirmed"
                 ? <CheckCircle2 className="h-4 w-4 text-emerald-400" />

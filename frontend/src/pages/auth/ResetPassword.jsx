@@ -39,7 +39,7 @@ export default function ResetPassword() {
           <div className="space-y-2">
             <Label htmlFor="password">Mật khẩu mới</Label>
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              required minLength={6} data-testid="reset-password-input" className="bg-[#18181b] border-zinc-800" />
+              required minLength={6} data-testid="reset-password-input" className="bg-[var(--panel)] border-[var(--border)]" />
           </div>
           {error && <p className="text-sm text-red-400" data-testid="reset-error">{error}</p>}
           <Button type="submit" disabled={loading} data-testid="reset-submit"

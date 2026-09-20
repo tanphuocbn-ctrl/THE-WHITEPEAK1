@@ -21,19 +21,19 @@ export default function ProjectLayout() {
   useEffect(() => { setLoading(true); reload().finally(() => setLoading(false)); }, [reload]);
 
   if (loading || !project) {
-    return <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>;
+    return <div className="flex h-full items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[var(--muted-2)]" /></div>;
   }
 
   const myRole = project.my_role;
   const tab = ({ isActive }) =>
     cn("flex items-center gap-2 border-b-2 px-1 pb-3 pt-1 text-sm transition-colors duration-150",
-      isActive ? "border-blue-500 text-zinc-100" : "border-transparent text-zinc-400 hover:text-zinc-200");
+      isActive ? "border-blue-500 text-[var(--text)]" : "border-transparent text-[var(--muted)] hover:text-[var(--text)]");
 
   return (
     <ProjectContext.Provider value={{ project, myRole, reload, projectId: id }}>
-      <div className="sticky top-0 z-20 border-b border-zinc-800/80 bg-[#09090b]/80 backdrop-blur-xl">
+      <div className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl">
         <div className="px-6 lg:px-8 pt-5">
-          <p className="font-mono text-xs text-zinc-500">{project.code}</p>
+          <p className="font-mono text-xs text-[var(--muted-2)]">{project.code}</p>
           <h1 className="font-head text-2xl font-extrabold tracking-tight mt-0.5">{project.title}</h1>
           <nav className="mt-4 flex gap-6 overflow-x-auto">
             <NavLink to={`/projects/${id}`} end className={tab} data-testid="tab-structure"><GitBranch className="h-4 w-4" /> Cấu trúc</NavLink>

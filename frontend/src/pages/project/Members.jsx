@@ -39,19 +39,19 @@ export default function Members() {
   return (
     <div className="mx-auto max-w-3xl animate-fade-up space-y-6">
       {canManage && (
-        <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-5">
+        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-5">
           <h2 className="font-head font-bold mb-4">Thêm thành viên</h2>
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 space-y-2">
               <Label className="text-xs">Email</Label>
               <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nguoidung@studio.vn"
-                data-testid="member-email-input" className="bg-[#0f0f11] border-zinc-800" />
+                data-testid="member-email-input" className="bg-[var(--panel-2)] border-[var(--border)]" />
             </div>
             <div className="w-full sm:w-48 space-y-2">
               <Label className="text-xs">Vai trò</Label>
               <Select value={role} onValueChange={setRole}>
-                <SelectTrigger data-testid="member-role-select" className="bg-[#0f0f11] border-zinc-800"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#18181b] border-zinc-800">
+                <SelectTrigger data-testid="member-role-select" className="bg-[var(--panel-2)] border-[var(--border)]"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[var(--panel)] border-[var(--border)]">
                   {PROJECT_ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -65,22 +65,22 @@ export default function Members() {
         </div>
       )}
 
-      <div className="rounded-lg border border-zinc-800/80 bg-[#18181b]">
-        <div className="border-b border-zinc-800/80 p-4"><h2 className="font-head font-bold">Thành viên ({members.length})</h2></div>
-        <div className="divide-y divide-zinc-800/80">
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <div className="border-b border-[var(--border)] p-4"><h2 className="font-head font-bold">Thành viên ({members.length})</h2></div>
+        <div className="divide-y divide-[var(--border)]/80">
           {members.map((m) => (
             <div key={m.user_id} className="flex items-center gap-3 p-4" data-testid={`member-${m.email}`}>
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-700 text-xs font-semibold">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--panel-2)] text-xs font-semibold">
                 {(m.name || m.email).slice(0, 2).toUpperCase()}
               </div>
               <div className="flex-1 overflow-hidden">
                 <p className="truncate text-sm">{m.name}</p>
-                <p className="truncate text-xs text-zinc-500">{m.email}</p>
+                <p className="truncate text-xs text-[var(--muted-2)]">{m.email}</p>
               </div>
-              <span className="rounded-full border border-zinc-700 px-2.5 py-0.5 text-xs text-zinc-300">{ROLE_LABEL[m.role] || m.role}</span>
+              <span className="rounded-full border border-[var(--border)] px-2.5 py-0.5 text-xs text-[var(--muted)]">{ROLE_LABEL[m.role] || m.role}</span>
               {canManage && m.user_id !== user.id && (
                 <Button size="icon" variant="ghost" onClick={() => remove(m.user_id)} data-testid={`remove-${m.email}`}
-                  className="text-zinc-500 hover:text-red-400"><Trash2 className="h-4 w-4" /></Button>
+                  className="text-[var(--muted-2)] hover:text-red-400"><Trash2 className="h-4 w-4" /></Button>
               )}
             </div>
           ))}

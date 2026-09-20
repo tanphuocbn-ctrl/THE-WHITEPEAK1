@@ -544,11 +544,11 @@ export default function Canvas() {
   const frames = nodes.filter((n) => n.type === "frame");
   const others = nodes.filter((n) => n.type !== "frame");
 
-  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-zinc-600" /></div>;
+  if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[var(--muted-2)]" /></div>;
 
   const IconBtn = ({ onClick, title, disabled, active, children, testid }) => (
     <button onClick={onClick} disabled={disabled} title={title} data-testid={testid}
-      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150 disabled:opacity-30 ${active ? "bg-blue-600 text-white" : "text-zinc-300 hover:bg-white/10 hover:text-white active:scale-95"}`}>
+      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-150 disabled:opacity-30 ${active ? "bg-blue-600 text-white" : "text-[var(--muted)] hover:bg-white/10 hover:text-white active:scale-95"}`}>
       {children}
     </button>
   );
@@ -558,22 +558,22 @@ export default function Canvas() {
   return (
     <div className="animate-fade-up -mx-6 -my-6 lg:-mx-8 lg:-my-8">
       {sceneId && (
-        <div className="absolute left-4 top-4 z-40 flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-sm shadow-xl backdrop-blur-xl" data-testid="scene-canvas-banner">
-          <Link to={`/projects/${projectId}/canvas`} className="inline-flex items-center gap-1 text-zinc-400 hover:text-zinc-100"><FrameIcon className="h-3.5 w-3.5" /> Canvas dự án</Link>
-          <span className="text-zinc-600">/</span>
-          <span className="font-medium text-zinc-100">{sceneObj ? `${sceneObj.code} · ${sceneObj.title}` : "Cảnh"}</span>
+        <div className="absolute left-4 top-4 z-40 flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--panel)]/80 px-3 py-2 text-sm shadow-xl backdrop-blur-xl" data-testid="scene-canvas-banner">
+          <Link to={`/projects/${projectId}/canvas`} className="inline-flex items-center gap-1 text-[var(--muted)] hover:text-[var(--text)]"><FrameIcon className="h-3.5 w-3.5" /> Canvas dự án</Link>
+          <span className="text-[var(--muted-2)]">/</span>
+          <span className="font-medium text-[var(--text)]">{sceneObj ? `${sceneObj.code} · ${sceneObj.title}` : "Cảnh"}</span>
         </div>
       )}
       {connectFrom && <div className="absolute left-1/2 top-24 z-40 -translate-x-1/2 rounded-full border border-blue-500/40 bg-blue-950/70 px-3 py-1 text-xs text-blue-200 backdrop-blur" data-testid="connect-hint">Chọn node đích để nối · nhấp nền để hủy</div>}
 
       <div ref={wrap} onMouseDown={onBgMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp} onWheel={onWheel}
         onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} data-testid="canvas-board"
-        className={`relative h-[calc(100vh-9.5rem)] w-full overflow-hidden bg-[#09090b] cursor-grab active:cursor-grabbing select-none transition-colors ${dropActive ? "ring-2 ring-inset ring-pink-500/50" : ""}`}
-        style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: `${26 * view.scale}px ${26 * view.scale}px`, backgroundPosition: `${view.tx}px ${view.ty}px` }}>
+        className={`relative h-[calc(100vh-9.5rem)] w-full overflow-hidden bg-[var(--bg)] cursor-grab active:cursor-grabbing select-none transition-colors ${dropActive ? "ring-2 ring-inset ring-pink-500/50" : ""}`}
+        style={{ backgroundImage: "radial-gradient(circle, var(--dot) 1px, transparent 1px)", backgroundSize: `${26 * view.scale}px ${26 * view.scale}px`, backgroundPosition: `${view.tx}px ${view.ty}px` }}>
 
         {dropActive && (
           <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-pink-500/5" data-testid="drop-overlay">
-            <span className="rounded-xl border border-pink-500/40 bg-zinc-900/90 px-5 py-2.5 text-sm text-pink-200 backdrop-blur"><ImageIcon className="mr-2 inline h-4 w-4" /> Thả ảnh để tạo node Ảnh</span>
+            <span className="rounded-xl border border-pink-500/40 bg-[var(--panel)]/90 px-5 py-2.5 text-sm text-pink-200 backdrop-blur"><ImageIcon className="mr-2 inline h-4 w-4" /> Thả ảnh để tạo node Ảnh</span>
           </div>
         )}
 
@@ -601,11 +601,11 @@ export default function Canvas() {
                   <input autoFocus value={editEdge.value} onChange={(e) => setEditEdge({ id: ed.id, value: e.target.value })}
                     onBlur={() => { setEdgeLabel(ed.id, editEdge.value); setEditEdge(null); }}
                     onKeyDown={(e) => { if (e.key === "Enter") { setEdgeLabel(ed.id, editEdge.value); setEditEdge(null); } if (e.key === "Escape") setEditEdge(null); }}
-                    className="w-32 rounded-full border border-blue-500 bg-zinc-950 px-2 py-0.5 text-[11px] text-zinc-100 outline-none" />
+                    className="w-32 rounded-full border border-blue-500 bg-[var(--panel-2)] px-2 py-0.5 text-[11px] text-[var(--text)] outline-none" />
                 ) : (
-                  <div className="flex items-center gap-1 rounded-full border border-zinc-700 bg-zinc-900/90 px-2 py-0.5 text-[10px] text-zinc-300 whitespace-nowrap backdrop-blur">
+                  <div className="flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--panel)]/90 px-2 py-0.5 text-[10px] text-[var(--muted)] whitespace-nowrap backdrop-blur">
                     <button onClick={() => canEdit && setEditEdge({ id: ed.id, value: ed.label || "" })} data-testid={`edge-edit-${ed.id}`} className={canEdit ? "hover:text-blue-400" : "cursor-default"}>{ed.label || "＋ nhãn"}</button>
-                    {canEdit && <button onClick={() => deleteEdge(ed.id)} data-testid={`edge-del-${ed.id}`} className="text-zinc-500 hover:text-red-400"><X className="h-3 w-3" /></button>}
+                    {canEdit && <button onClick={() => deleteEdge(ed.id)} data-testid={`edge-del-${ed.id}`} className="text-[var(--muted-2)] hover:text-red-400"><X className="h-3 w-3" /></button>}
                   </div>
                 )}
               </div>
@@ -630,29 +630,29 @@ export default function Canvas() {
         {/* empty state */}
         {nodes.length === 0 && (
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-            <FrameIcon className="h-12 w-12 text-zinc-700 mb-3" />
-            <p className="text-zinc-400 text-sm font-medium">Bảng dữ liệu dự án của bạn</p>
-            <p className="text-zinc-600 text-xs mt-1">{canEdit ? "Thêm Khung / node từ thanh dưới · kéo ảnh vào để làm moodboard · cuộn để zoom" : "Chưa có nội dung canvas."}</p>
+            <FrameIcon className="h-12 w-12 text-[var(--muted-2)] mb-3" />
+            <p className="text-[var(--muted)] text-sm font-medium">Bảng dữ liệu dự án của bạn</p>
+            <p className="text-[var(--muted-2)] text-xs mt-1">{canEdit ? "Thêm Khung / node từ thanh dưới · kéo ảnh vào để làm moodboard · cuộn để zoom" : "Chưa có nội dung canvas."}</p>
           </div>
         )}
 
         {/* top-right control cluster */}
-        <div className="absolute top-4 z-40 flex items-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl transition-[right] duration-200"
+        <div className="absolute top-4 z-40 flex items-center gap-1 rounded-2xl border border-[var(--border)] bg-[var(--panel)]/80 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl transition-[right] duration-200"
           style={{ right: selNode && canEdit ? "21rem" : "1rem" }}>
           <IconBtn onClick={undo} disabled={!canEdit} title="Hoàn tác (Ctrl+Z)" testid="canvas-undo"><Undo2 className="h-4 w-4" /></IconBtn>
           <IconBtn onClick={redo} disabled={!canEdit} title="Làm lại" testid="canvas-redo"><Redo2 className="h-4 w-4" /></IconBtn>
-          <div className="mx-0.5 h-6 w-px bg-zinc-800" />
+          <div className="mx-0.5 h-6 w-px bg-[var(--panel-2)]" />
           <IconBtn onClick={() => zoomBtn(0.85)} title="Thu nhỏ" testid="canvas-zoom-out"><Minus className="h-4 w-4" /></IconBtn>
-          <span className="w-11 text-center text-xs tabular text-zinc-400" data-testid="canvas-zoom-level">{Math.round(view.scale * 100)}%</span>
+          <span className="w-11 text-center text-xs tabular text-[var(--muted)]" data-testid="canvas-zoom-level">{Math.round(view.scale * 100)}%</span>
           <IconBtn onClick={() => zoomBtn(1.15)} title="Phóng to" testid="canvas-zoom-in"><Plus className="h-4 w-4" /></IconBtn>
           <IconBtn onClick={fitView} title="Vừa màn hình" testid="canvas-fit-btn"><Maximize2 className="h-4 w-4" /></IconBtn>
-          <div className="mx-0.5 h-6 w-px bg-zinc-800" />
+          <div className="mx-0.5 h-6 w-px bg-[var(--panel-2)]" />
           {canEdit && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild><IconBtn title="Sắp xếp tự động" testid="canvas-arrange-btn"><Wand2 className="h-4 w-4" /></IconBtn></DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800">
-                <DropdownMenuItem onClick={() => autoLayout("grid")} data-testid="arrange-grid" className="focus:bg-zinc-800"><LayoutGrid className="mr-2 h-4 w-4" /> Theo lưới</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => autoLayout("tree")} data-testid="arrange-tree" className="focus:bg-zinc-800"><Workflow className="mr-2 h-4 w-4" /> Theo cây Scene → Shot</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="bg-[var(--panel)] border-[var(--border)]">
+                <DropdownMenuItem onClick={() => autoLayout("grid")} data-testid="arrange-grid" className="focus:bg-[var(--panel-2)]"><LayoutGrid className="mr-2 h-4 w-4" /> Theo lưới</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => autoLayout("tree")} data-testid="arrange-tree" className="focus:bg-[var(--panel-2)]"><Workflow className="mr-2 h-4 w-4" /> Theo cây Scene → Shot</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -660,19 +660,19 @@ export default function Canvas() {
           {!sceneId && (
           <Dialog open={snapOpen} onOpenChange={(o) => { setSnapOpen(o); if (o) loadSnaps(); }}>
             <DialogTrigger asChild><IconBtn title="Snapshot" testid="canvas-snapshots-btn"><History className="h-4 w-4" /></IconBtn></DialogTrigger>
-            <DialogContent className="bg-zinc-900 border-zinc-800">
+            <DialogContent className="bg-[var(--panel)] border-[var(--border)]">
               <DialogHeader><DialogTitle className="font-head">Snapshots canvas</DialogTitle></DialogHeader>
               {canEdit && (
                 <div className="flex gap-2">
-                  <Input value={snapName} onChange={(e) => setSnapName(e.target.value)} placeholder="Tên snapshot" data-testid="snap-name-input" className="bg-zinc-950 border-zinc-800" />
+                  <Input value={snapName} onChange={(e) => setSnapName(e.target.value)} placeholder="Tên snapshot" data-testid="snap-name-input" className="bg-[var(--panel-2)] border-[var(--border)]" />
                   <Button onClick={createSnapshot} data-testid="snap-create-btn" className="bg-blue-600 hover:bg-blue-500 text-white"><Camera className="mr-1.5 h-4 w-4" /> Lưu</Button>
                 </div>
               )}
               <div className="max-h-72 overflow-y-auto thin-scroll space-y-2">
-                {snapshots.length === 0 ? <p className="text-sm text-zinc-500 py-2">Chưa có snapshot.</p> : snapshots.map((sp) => (
-                  <div key={sp.id} className="flex items-center gap-3 rounded-md border border-zinc-800 bg-zinc-950 p-3" data-testid={`snap-${sp.id}`}>
-                    <Camera className="h-4 w-4 text-zinc-500" />
-                    <div className="flex-1 overflow-hidden"><p className="truncate text-sm">{sp.name}</p><p className="text-xs text-zinc-500">{sp.node_count} node · {sp.created_by_name}</p></div>
+                {snapshots.length === 0 ? <p className="text-sm text-[var(--muted-2)] py-2">Chưa có snapshot.</p> : snapshots.map((sp) => (
+                  <div key={sp.id} className="flex items-center gap-3 rounded-md border border-[var(--border)] bg-[var(--panel-2)] p-3" data-testid={`snap-${sp.id}`}>
+                    <Camera className="h-4 w-4 text-[var(--muted-2)]" />
+                    <div className="flex-1 overflow-hidden"><p className="truncate text-sm">{sp.name}</p><p className="text-xs text-[var(--muted-2)]">{sp.node_count} node · {sp.created_by_name}</p></div>
                     {canEdit && <Button size="sm" variant="ghost" onClick={() => restoreSnapshot(sp.id)} data-testid={`snap-restore-${sp.id}`} className="text-blue-400">Khôi phục</Button>}
                   </div>
                 ))}
@@ -682,7 +682,7 @@ export default function Canvas() {
           )}
           {canEdit && (
             <>
-              <div className="mx-0.5 h-6 w-px bg-zinc-800" />
+              <div className="mx-0.5 h-6 w-px bg-[var(--panel-2)]" />
               <Button size="sm" onClick={save} disabled={saving || !dirty} data-testid="canvas-save-btn" className="h-9 rounded-lg bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-40">
                 {saving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Save className="mr-1.5 h-4 w-4" />} {dirty ? "Lưu" : "Đã lưu"}
               </Button>
@@ -692,41 +692,41 @@ export default function Canvas() {
 
         {/* bottom-center add toolbar */}
         {canEdit && (
-          <div className="absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-zinc-800 bg-zinc-900/80 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl" data-testid="canvas-add-toolbar">
+          <div className="absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-[var(--border)] bg-[var(--panel)]/80 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl" data-testid="canvas-add-toolbar">
             {Object.entries(NODE_TYPES).map(([k, t]) => {
               const Icon = t.icon;
               return (
                 <button key={k} onClick={() => addNode(k)} data-testid={`add-node-${k}`} title={`Thêm ${t.label}`}
-                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-zinc-300 transition-all hover:bg-white/10 hover:text-white active:scale-95">
+                  className="group flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-[var(--muted)] transition-all hover:bg-white/10 hover:text-white active:scale-95">
                   <Icon className="h-4 w-4" style={{ color: t.color }} /> <span className="hidden sm:inline">{t.label}</span>
                 </button>
               );
             })}
-            <div className="mx-0.5 h-6 w-px bg-zinc-800" />
+            <div className="mx-0.5 h-6 w-px bg-[var(--panel-2)]" />
             <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
               <DialogTrigger asChild>
                 <button data-testid="add-from-project-btn" className="flex items-center gap-1.5 rounded-lg bg-blue-600/90 px-3 py-2 text-xs font-medium text-white transition-all hover:bg-blue-500 active:scale-95"><Boxes className="h-4 w-4" /> <span className="hidden sm:inline">Từ dự án</span></button>
               </DialogTrigger>
-              <DialogContent className="bg-zinc-900 border-zinc-800">
+              <DialogContent className="bg-[var(--panel)] border-[var(--border)]">
                 <DialogHeader><DialogTitle className="font-head">Thêm node liên kết dữ liệu thật</DialogTitle></DialogHeader>
                 <Tabs defaultValue="shots">
-                  <TabsList className="bg-zinc-950 border border-zinc-800">
+                  <TabsList className="bg-[var(--panel-2)] border border-[var(--border)]">
                     <TabsTrigger value="shots" data-testid="picker-tab-shots">Shots ({shots.length})</TabsTrigger>
                     <TabsTrigger value="scenes" data-testid="picker-tab-scenes">Scenes ({scenes.length})</TabsTrigger>
                   </TabsList>
                   <TabsContent value="shots" className="mt-3 max-h-72 overflow-y-auto thin-scroll space-y-1.5">
-                    {shots.length === 0 ? <p className="text-sm text-zinc-500 py-2">Chưa có shot.</p> : shots.map((s) => (
-                      <button key={s.id} onClick={() => addRefNode("shot", s)} data-testid={`pick-shot-${s.code}`} className="flex w-full items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 p-2.5 text-left hover:border-purple-600 transition-colors">
-                        <Film className="h-4 w-4 text-purple-400 shrink-0" /><span className="font-mono text-xs text-purple-300">{s.code}</span><span className="flex-1 truncate text-sm">{s.title}</span><Plus className="h-3.5 w-3.5 text-zinc-500" />
+                    {shots.length === 0 ? <p className="text-sm text-[var(--muted-2)] py-2">Chưa có shot.</p> : shots.map((s) => (
+                      <button key={s.id} onClick={() => addRefNode("shot", s)} data-testid={`pick-shot-${s.code}`} className="flex w-full items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--panel-2)] p-2.5 text-left hover:border-purple-600 transition-colors">
+                        <Film className="h-4 w-4 text-purple-400 shrink-0" /><span className="font-mono text-xs text-purple-300">{s.code}</span><span className="flex-1 truncate text-sm">{s.title}</span><Plus className="h-3.5 w-3.5 text-[var(--muted-2)]" />
                       </button>
                     ))}
                   </TabsContent>
                   <TabsContent value="scenes" className="mt-3 max-h-72 overflow-y-auto thin-scroll space-y-1.5">
-                    {scenes.length === 0 ? <p className="text-sm text-zinc-500 py-2">Chưa có scene.</p> : scenes.map((s) => (
-                      <div key={s.id} className="flex items-center gap-2 rounded-md border border-zinc-800 bg-zinc-950 p-2.5 hover:border-blue-600 transition-colors">
+                    {scenes.length === 0 ? <p className="text-sm text-[var(--muted-2)] py-2">Chưa có scene.</p> : scenes.map((s) => (
+                      <div key={s.id} className="flex items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--panel-2)] p-2.5 hover:border-blue-600 transition-colors">
                         <Clapperboard className="h-4 w-4 text-blue-400 shrink-0" /><span className="font-mono text-xs text-blue-300">{s.code}</span><span className="flex-1 truncate text-sm">{s.title}</span>
                         <button onClick={() => addFrameFromScene(s)} data-testid={`pick-scene-frame-${s.code}`} title="Tạo khung moodboard" className="inline-flex items-center gap-1 rounded bg-blue-600/20 px-2 py-1 text-[11px] text-blue-200 hover:bg-blue-600/40"><FrameIcon className="h-3 w-3" /> Khung</button>
-                        <button onClick={() => addRefNode("scene", s)} data-testid={`pick-scene-${s.code}`} title="Thêm node scene" className="rounded p-1 text-zinc-400 hover:text-blue-300"><Plus className="h-4 w-4" /></button>
+                        <button onClick={() => addRefNode("scene", s)} data-testid={`pick-scene-${s.code}`} title="Thêm node scene" className="rounded p-1 text-[var(--muted)] hover:text-blue-300"><Plus className="h-4 w-4" /></button>
                       </div>
                     ))}
                   </TabsContent>
@@ -738,18 +738,18 @@ export default function Canvas() {
 
         {/* right properties panel */}
         {selNode && canEdit && (
-          <div className="absolute right-0 top-0 z-40 h-full w-80 border-l border-zinc-800 bg-zinc-900/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl overflow-y-auto thin-scroll animate-slide-in-right" data-testid="node-editor" onMouseDown={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
+          <div className="absolute right-0 top-0 z-40 h-full w-80 border-l border-[var(--border)] bg-[var(--panel)]/95 p-4 shadow-2xl shadow-black/50 backdrop-blur-xl overflow-y-auto thin-scroll animate-slide-in-right" data-testid="node-editor" onMouseDown={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <span className="overline flex items-center gap-1.5">{(() => { const I = (NODE_TYPES[selNode.type] || NODE_TYPES.comment).icon; return <I className="h-3.5 w-3.5" style={{ color: selNode.color }} />; })()} {(NODE_TYPES[selNode.type] || {}).label}</span>
               <div className="flex gap-1">
-                <button onClick={() => toggleLock(selNode.id)} title={selNode.locked ? "Mở khóa" : "Khóa vị trí"} data-testid="node-lock-btn" className={selNode.locked ? "text-amber-400 p-1" : "text-zinc-500 hover:text-amber-400 p-1"}>{selNode.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}</button>
-                <button onClick={() => removeNode(selNode.id)} data-testid="node-delete-btn" className="text-zinc-500 hover:text-red-400 p-1"><Trash2 className="h-4 w-4" /></button>
-                <button onClick={() => setSel(null)} className="text-zinc-500 hover:text-zinc-200 p-1"><X className="h-4 w-4" /></button>
+                <button onClick={() => toggleLock(selNode.id)} title={selNode.locked ? "Mở khóa" : "Khóa vị trí"} data-testid="node-lock-btn" className={selNode.locked ? "text-amber-400 p-1" : "text-[var(--muted-2)] hover:text-amber-400 p-1"}>{selNode.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}</button>
+                <button onClick={() => removeNode(selNode.id)} data-testid="node-delete-btn" className="text-[var(--muted-2)] hover:text-red-400 p-1"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => setSel(null)} className="text-[var(--muted-2)] hover:text-[var(--text)] p-1"><X className="h-4 w-4" /></button>
               </div>
             </div>
-            <label className="text-xs text-zinc-500">Tiêu đề</label>
-            <Input value={selNode.title} onChange={(e) => updateNode(selNode.id, { title: e.target.value })} placeholder="Tiêu đề" data-testid="node-title-input" className="mt-1 bg-zinc-950 border-zinc-800" />
-            <label className="mt-4 block text-xs text-zinc-500">Màu</label>
+            <label className="text-xs text-[var(--muted-2)]">Tiêu đề</label>
+            <Input value={selNode.title} onChange={(e) => updateNode(selNode.id, { title: e.target.value })} placeholder="Tiêu đề" data-testid="node-title-input" className="mt-1 bg-[var(--panel-2)] border-[var(--border)]" />
+            <label className="mt-4 block text-xs text-[var(--muted-2)]">Màu</label>
             <div className="mt-1.5 flex flex-wrap items-center gap-2">
               {PALETTE.map((c) => (
                 <button key={c} onClick={() => updateNode(selNode.id, { color: c })} data-testid={`node-color-${c}`}
@@ -758,47 +758,47 @@ export default function Canvas() {
             </div>
             {selNode.type !== "frame" && (
               <>
-                <label className="mt-4 block text-xs text-zinc-500">Nội dung / ghi chú</label>
-                <Textarea value={selNode.text} onChange={(e) => updateNode(selNode.id, { text: e.target.value })} placeholder="Mô tả, tag (VD: INT. DAY)…" data-testid="node-text-input" className="mt-1 bg-zinc-950 border-zinc-800 text-sm" rows={4} />
+                <label className="mt-4 block text-xs text-[var(--muted-2)]">Nội dung / ghi chú</label>
+                <Textarea value={selNode.text} onChange={(e) => updateNode(selNode.id, { text: e.target.value })} placeholder="Mô tả, tag (VD: INT. DAY)…" data-testid="node-text-input" className="mt-1 bg-[var(--panel-2)] border-[var(--border)] text-sm" rows={4} />
               </>
             )}
             {(selNode.type === "media" || selNode.type === "character" || selNode.type === "setting") && (
               <div className="mt-4">
-                <label className="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer rounded-lg border border-dashed border-zinc-700 p-3 hover:border-pink-500/60 transition-colors">
+                <label className="flex items-center gap-2 text-sm text-[var(--muted)] cursor-pointer rounded-lg border border-dashed border-[var(--border)] p-3 hover:border-pink-500/60 transition-colors">
                   <Upload className="h-4 w-4 text-pink-400" /><span>{selNode.media_id ? "Đổi ảnh" : "Tải ảnh lên"}</span>
                   <input type="file" accept="image/*" className="hidden" data-testid="node-media-input" onChange={(e) => uploadMedia(selNode.id, e.target.files?.[0])} />
                 </label>
-                {selNode.media_name && <p className="mt-1 text-xs text-zinc-500 truncate">{selNode.media_name}</p>}
+                {selNode.media_name && <p className="mt-1 text-xs text-[var(--muted-2)] truncate">{selNode.media_name}</p>}
               </div>
             )}
             {(selNode.type === "character" || selNode.type === "setting") && (
               <div className="mt-4">
-                <label className="text-xs text-zinc-500 flex items-center gap-1">Ảnh gợi ý {coverBusy && <Loader2 className="h-3 w-3 animate-spin" />}</label>
+                <label className="text-xs text-[var(--muted-2)] flex items-center gap-1">Ảnh gợi ý {coverBusy && <Loader2 className="h-3 w-3 animate-spin" />}</label>
                 <div className="mt-1.5 grid grid-cols-3 gap-1.5">
                   {(SUGGESTED_COVERS[selNode.type] || []).map((url) => (
                     <button key={url} onClick={() => applyCover(selNode.id, url)} data-testid="cover-suggestion"
-                      className="aspect-[4/3] overflow-hidden rounded-md border border-zinc-800 hover:border-blue-500 transition-colors">
+                      className="aspect-[4/3] overflow-hidden rounded-md border border-[var(--border)] hover:border-blue-500 transition-colors">
                       <img src={url} alt="" className="h-full w-full object-cover" draggable={false} />
                     </button>
                   ))}
                 </div>
-                <p className="mt-1.5 text-[11px] text-zinc-600">Bấm để gắn nhanh ảnh bìa {selNode.type === "character" ? "nhân vật" : "bối cảnh"}.</p>
+                <p className="mt-1.5 text-[11px] text-[var(--muted-2)]">Bấm để gắn nhanh ảnh bìa {selNode.type === "character" ? "nhân vật" : "bối cảnh"}.</p>
               </div>
             )}
             {selNode.type === "frame" && (
               <div className="mt-4">
-                <div className="flex items-center justify-between mb-2"><label className="text-xs text-zinc-500">Ảnh trong khung ({(selNode.items || []).length})</label>
+                <div className="flex items-center justify-between mb-2"><label className="text-xs text-[var(--muted-2)]">Ảnh trong khung ({(selNode.items || []).length})</label>
                   <button onClick={() => frameFileRef.current?.click()} data-testid="frame-add-images-btn" className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-500">{uploadingFrame ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />} Thêm ảnh</button>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   {(selNode.items || []).map((it, i) => (
-                    <div key={i} className="group relative aspect-square overflow-hidden rounded-md border border-zinc-800 bg-zinc-950">
-                      {mediaUrls[it.media_id] ? <img src={mediaUrls[it.media_id]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><Loader2 className="h-3 w-3 animate-spin text-zinc-600" /></div>}
+                    <div key={i} className="group relative aspect-square overflow-hidden rounded-md border border-[var(--border)] bg-[var(--panel-2)]">
+                      {mediaUrls[it.media_id] ? <img src={mediaUrls[it.media_id]} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center"><Loader2 className="h-3 w-3 animate-spin text-[var(--muted-2)]" /></div>}
                       <button onClick={() => removeFrameItem(selNode.id, i)} className="absolute right-0.5 top-0.5 hidden rounded bg-black/70 p-0.5 text-red-300 group-hover:block"><X className="h-3 w-3" /></button>
                     </div>
                   ))}
                 </div>
-                <p className="mt-2 text-[11px] text-zinc-600">Mẹo: kéo nhiều ảnh cùng lúc để tạo moodboard cho scene.</p>
+                <p className="mt-2 text-[11px] text-[var(--muted-2)]">Mẹo: kéo nhiều ảnh cùng lúc để tạo moodboard cho scene.</p>
               </div>
             )}
           </div>
@@ -820,11 +820,11 @@ function NodeChrome({ n, canEdit, onLock, onLink }) {
   return (
     <div className="flex items-center gap-1.5 px-2.5 pt-2">
       {(() => { const I = (NODE_TYPES[n.type] || NODE_TYPES.comment).icon; return <I className="h-3.5 w-3.5" style={{ color: n.color || (NODE_TYPES[n.type] || {}).color }} />; })()}
-      <span className="text-[10px] uppercase tracking-wide text-zinc-500">{(NODE_TYPES[n.type] || {}).label}</span>
+      <span className="text-[10px] uppercase tracking-wide text-[var(--muted-2)]">{(NODE_TYPES[n.type] || {}).label}</span>
       {canEdit ? (
         <div className="ml-auto flex items-center gap-1">
-          <button onMouseDown={(e) => { e.stopPropagation(); onLock(); }} data-testid={`lock-${n.id}`} title={n.locked ? "Mở khóa" : "Khóa"} className={n.locked ? "text-amber-400" : "text-zinc-500 hover:text-amber-400"}>{n.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}</button>
-          <button onMouseDown={(e) => { e.stopPropagation(); onLink(); }} data-testid={`link-${n.id}`} title="Nối tới node khác" className="text-zinc-500 hover:text-blue-400"><Link2 className="h-3.5 w-3.5" /></button>
+          <button onMouseDown={(e) => { e.stopPropagation(); onLock(); }} data-testid={`lock-${n.id}`} title={n.locked ? "Mở khóa" : "Khóa"} className={n.locked ? "text-amber-400" : "text-[var(--muted-2)] hover:text-amber-400"}>{n.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}</button>
+          <button onMouseDown={(e) => { e.stopPropagation(); onLink(); }} data-testid={`link-${n.id}`} title="Nối tới node khác" className="text-[var(--muted-2)] hover:text-blue-400"><Link2 className="h-3.5 w-3.5" /></button>
         </div>
       ) : (n.locked && <Lock className="ml-auto h-3.5 w-3.5 text-amber-400" />)}
     </div>
@@ -844,24 +844,24 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
   const color = n.color || t.color;
   const src = n.media_id ? mediaUrls[n.media_id] : n.media_url;
   const showResize = selected && canEdit && !n.locked && n.type === "media";
-  const base = `group absolute rounded-xl border transition-all duration-150 ${selected ? "border-blue-500 ring-2 ring-blue-500/60" : n.locked ? "border-amber-600/50" : "border-zinc-700 hover:border-zinc-500 hover:-translate-y-0.5"} ${n.locked ? "cursor-default" : ""}`;
+  const base = `group absolute rounded-xl border transition-all duration-150 ${selected ? "border-blue-500 ring-2 ring-blue-500/60" : n.locked ? "border-amber-600/50" : "border-[var(--border)] hover:border-[var(--muted-2)] hover:-translate-y-0.5"} ${n.locked ? "cursor-default" : ""}`;
 
   // MEDIA — edge-to-edge image with gradient title scrim
   if (n.type === "media") {
     return (
-      <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} overflow-hidden bg-zinc-900 shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 240, height: n.h || 170 }}>
+      <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} overflow-hidden bg-[var(--panel)] shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 240, height: n.h || 170 }}>
         {src ? (
           <img src={src} alt={n.media_name || ""} data-testid={`node-media-${n.id}`} className="h-full w-full object-cover" draggable={false} />
         ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-zinc-600"><ImageIcon className="h-6 w-6" /><span className="text-[10px]">Chưa có ảnh</span></div>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-[var(--muted-2)]"><ImageIcon className="h-6 w-6" /><span className="text-[10px]">Chưa có ảnh</span></div>
         )}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2.5 pb-1.5 pt-6">
-          <p className="truncate text-xs font-medium text-zinc-100">{n.title}</p>
+          <p className="truncate text-xs font-medium text-[var(--text)]">{n.title}</p>
         </div>
         {canEdit && (
           <div className="absolute right-1.5 top-1.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-            <button onMouseDown={(e) => { e.stopPropagation(); onLock(); }} data-testid={`lock-${n.id}`} className={`rounded bg-black/60 p-1 ${n.locked ? "text-amber-400" : "text-zinc-300 hover:text-amber-400"}`}>{n.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}</button>
-            <button onMouseDown={(e) => { e.stopPropagation(); onLink(); }} data-testid={`link-${n.id}`} className="rounded bg-black/60 p-1 text-zinc-300 hover:text-blue-400"><Link2 className="h-3 w-3" /></button>
+            <button onMouseDown={(e) => { e.stopPropagation(); onLock(); }} data-testid={`lock-${n.id}`} className={`rounded bg-black/60 p-1 ${n.locked ? "text-amber-400" : "text-[var(--muted)] hover:text-amber-400"}`}>{n.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}</button>
+            <button onMouseDown={(e) => { e.stopPropagation(); onLink(); }} data-testid={`link-${n.id}`} className="rounded bg-black/60 p-1 text-[var(--muted)] hover:text-blue-400"><Link2 className="h-3 w-3" /></button>
           </div>
         )}
         {n.locked && !canEdit && <Lock className="absolute right-1.5 top-1.5 h-3.5 w-3.5 text-amber-400" />}
@@ -873,14 +873,14 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
   // CHARACTER / SETTING — thumbnail card
   if (n.type === "character" || n.type === "setting") {
     return (
-      <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} overflow-hidden bg-zinc-900 shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 190, minHeight: n.h || 230, borderLeft: `3px solid ${color}` }}>
+      <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} overflow-hidden bg-[var(--panel)] shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 190, minHeight: n.h || 230, borderLeft: `3px solid ${color}` }}>
         <NodeChrome n={n} canEdit={canEdit} onLock={onLock} onLink={onLink} />
         <div className="px-2.5 pb-2.5 pt-1">
-          <div className="aspect-[4/3] w-full overflow-hidden rounded-md bg-zinc-950">
-            {src ? <img src={src} alt="" data-testid={`node-media-${n.id}`} className="h-full w-full object-cover" draggable={false} /> : <div className="flex h-full items-center justify-center text-zinc-700">{n.type === "character" ? <User className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}</div>}
+          <div className="aspect-[4/3] w-full overflow-hidden rounded-md bg-[var(--panel-2)]">
+            {src ? <img src={src} alt="" data-testid={`node-media-${n.id}`} className="h-full w-full object-cover" draggable={false} /> : <div className="flex h-full items-center justify-center text-[var(--muted-2)]">{n.type === "character" ? <User className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}</div>}
           </div>
-          <p className="mt-2 text-sm font-medium leading-tight text-zinc-100 break-words">{n.title}</p>
-          {n.text && <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-zinc-500 break-words">{n.text}</p>}
+          <p className="mt-2 text-sm font-medium leading-tight text-[var(--text)] break-words">{n.title}</p>
+          {n.text && <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-[var(--muted-2)] break-words">{n.text}</p>}
         </div>
       </div>
     );
@@ -892,8 +892,8 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
       <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} bg-yellow-500/10 shadow-xl shadow-black/30`} style={{ left: n.x, top: n.y, width: n.w || 210, minHeight: n.h || 120, borderColor: selected ? undefined : "rgba(234,179,8,0.3)", borderLeft: `3px solid ${color}` }}>
         <NodeChrome n={n} canEdit={canEdit} onLock={onLock} onLink={onLink} />
         <div className="px-2.5 pb-2.5 pt-1">
-          <p className="text-sm font-medium text-zinc-100 break-words">{n.title}</p>
-          {n.text && <p className="mt-1 whitespace-pre-line text-xs text-zinc-300/90 break-words">{n.text}</p>}
+          <p className="text-sm font-medium text-[var(--text)] break-words">{n.title}</p>
+          {n.text && <p className="mt-1 whitespace-pre-line text-xs text-[var(--muted)]/90 break-words">{n.text}</p>}
         </div>
       </div>
     );
@@ -901,11 +901,11 @@ function RegularNode({ n, selected, canEdit, mediaUrls, onMouseDown, onLock, onL
 
   // SCENE / SHOT (+ generic)
   return (
-    <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} bg-zinc-900 shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 210, minHeight: n.h || 96, borderLeft: `3px solid ${color}` }}>
+    <div onMouseDown={onMouseDown} data-testid={`node-${n.id}`} className={`${base} bg-[var(--panel)] shadow-xl shadow-black/40`} style={{ left: n.x, top: n.y, width: n.w || 210, minHeight: n.h || 96, borderLeft: `3px solid ${color}` }}>
       <NodeChrome n={n} canEdit={canEdit} onLock={onLock} onLink={onLink} />
       <div className="px-2.5 pb-2.5 pt-1">
-        <p className="text-sm font-medium leading-tight text-zinc-100 break-words">{n.title}</p>
-        {n.text && <p className="mt-1 text-xs text-zinc-400 break-words whitespace-pre-line">{n.text}</p>}
+        <p className="text-sm font-medium leading-tight text-[var(--text)] break-words">{n.title}</p>
+        {n.text && <p className="mt-1 text-xs text-[var(--muted)] break-words whitespace-pre-line">{n.text}</p>}
         {n.ref_id && (
           <div className="mt-1.5 flex items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-400">● dữ liệu thật</span>
@@ -926,27 +926,27 @@ function FrameNode({ n, selected, canEdit, mediaUrls, isDropTarget, onMouseDown,
       style={{ left: n.x, top: n.y, width: n.w || 480, minHeight: n.h || 340, borderColor: isDropTarget ? "#ec4899" : color, background: "rgba(24,24,27,0.45)", backdropFilter: "blur(2px)" }}>
       <div className="flex items-center gap-2 px-4 pt-3">
         <FrameIcon className="h-4 w-4" style={{ color }} />
-        <span className="font-head text-sm font-bold text-zinc-100 truncate">{n.title || "Khung"}</span>
-        <span className="rounded-full bg-black/30 px-1.5 text-[10px] text-zinc-400">{items.length} ảnh</span>
+        <span className="font-head text-sm font-bold text-[var(--text)] truncate">{n.title || "Khung"}</span>
+        <span className="rounded-full bg-black/30 px-1.5 text-[10px] text-[var(--muted)]">{items.length} ảnh</span>
         {canEdit && (
           <div className="ml-auto flex items-center gap-1.5">
-            <button onMouseDown={(e) => { e.stopPropagation(); onAddImages(); }} data-testid={`frame-add-${n.id}`} title="Thêm ảnh" className="text-zinc-400 hover:text-blue-400"><Plus className="h-4 w-4" /></button>
-            <button onMouseDown={(e) => { e.stopPropagation(); onLock(); }} data-testid={`lock-${n.id}`} title={n.locked ? "Mở khóa" : "Khóa"} className={n.locked ? "text-amber-400" : "text-zinc-400 hover:text-amber-400"}>{n.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}</button>
-            <button onMouseDown={(e) => { e.stopPropagation(); onLink(); }} data-testid={`link-${n.id}`} title="Nối" className="text-zinc-400 hover:text-blue-400"><Link2 className="h-4 w-4" /></button>
+            <button onMouseDown={(e) => { e.stopPropagation(); onAddImages(); }} data-testid={`frame-add-${n.id}`} title="Thêm ảnh" className="text-[var(--muted)] hover:text-blue-400"><Plus className="h-4 w-4" /></button>
+            <button onMouseDown={(e) => { e.stopPropagation(); onLock(); }} data-testid={`lock-${n.id}`} title={n.locked ? "Mở khóa" : "Khóa"} className={n.locked ? "text-amber-400" : "text-[var(--muted)] hover:text-amber-400"}>{n.locked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}</button>
+            <button onMouseDown={(e) => { e.stopPropagation(); onLink(); }} data-testid={`link-${n.id}`} title="Nối" className="text-[var(--muted)] hover:text-blue-400"><Link2 className="h-4 w-4" /></button>
           </div>
         )}
       </div>
       <div className="p-4 pt-3">
         {items.length === 0 ? (
-          <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-700/70 text-zinc-500">
+          <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--border)] text-[var(--muted-2)]">
             <ImageIcon className="h-7 w-7" />
             <p className="text-xs">Kéo ảnh vào đây hoặc bấm ＋ để tạo moodboard</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-2">
             {items.map((it, i) => (
-              <div key={i} className="group/it relative aspect-square overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950" data-testid={`frame-tile-${n.id}-${i}`}>
-                {mediaUrls[it.media_id] ? <img src={mediaUrls[it.media_id]} alt={it.media_name || ""} className="h-full w-full object-cover" draggable={false} /> : <div className="flex h-full items-center justify-center"><Loader2 className="h-4 w-4 animate-spin text-zinc-600" /></div>}
+              <div key={i} className="group/it relative aspect-square overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel-2)]" data-testid={`frame-tile-${n.id}-${i}`}>
+                {mediaUrls[it.media_id] ? <img src={mediaUrls[it.media_id]} alt={it.media_name || ""} className="h-full w-full object-cover" draggable={false} /> : <div className="flex h-full items-center justify-center"><Loader2 className="h-4 w-4 animate-spin text-[var(--muted-2)]" /></div>}
                 {canEdit && <button onMouseDown={(e) => { e.stopPropagation(); onRemoveItem(i); }} className="absolute right-1 top-1 hidden rounded bg-black/70 p-0.5 text-red-300 group-hover/it:block"><X className="h-3 w-3" /></button>}
               </div>
             ))}

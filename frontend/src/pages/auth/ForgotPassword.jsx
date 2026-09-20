@@ -42,7 +42,7 @@ export default function ForgotPassword() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-              data-testid="forgot-email-input" className="bg-[#18181b] border-zinc-800" />
+              data-testid="forgot-email-input" className="bg-[var(--panel)] border-[var(--border)]" />
           </div>
           {error && <p className="text-sm text-red-400">{error}</p>}
           <Button type="submit" disabled={loading} data-testid="forgot-submit"
