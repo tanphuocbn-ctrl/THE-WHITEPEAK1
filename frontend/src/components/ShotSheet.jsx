@@ -21,6 +21,22 @@ import { toast } from "sonner";
 
 const CHUNK = 5 * 1024 * 1024;
 
+function tcToSeconds(tc) {
+  if (!tc) return null;
+  const parts = String(tc).trim().split(":").map((p) => parseFloat(p));
+  if (parts.some((n) => isNaN(n))) return null;
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return parts[0];
+}
+
+function secondsToTc(s) {
+  if (s == null || isNaN(s)) return "00:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+}
+
 export default function ShotSheet({ projectId, shotId, myRole, members, onClose, onChanged }) {
   const { user } = useAuth();
   const [shot, setShot] = useState(null);
@@ -179,6 +195,36 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
   const [comments, setComments] = useState([{ timecode: "", text: "" }]);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const videoRef = useRef(null);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const isVideo = latest && (latest.content_type || "").startsWith("video");
+
+  useEffect(() => {
+    let url;
+    let active = true;
+    if (isVideo) {
+      api.get(`/projects/${projectId}/versions/${latest.id}/download`, { responseType: "blob" })
+        .then((r) => { if (active) { url = URL.createObjectURL(r.data); setVideoUrl(url); } })
+        .catch(() => {});
+    }
+    return () => { active = false; if (url) URL.revokeObjectURL(url); setVideoUrl(null); };
+    // eslint-disable-next-line
+  }, [latest?.id]);
+
+  const seekTo = (tc) => {
+    const s = tcToSeconds(tc);
+    if (s != null && videoRef.current) {
+      videoRef.current.currentTime = s;
+      videoRef.current.play().catch(() => {});
+    }
+  };
+
+  const captureTime = (i) => {
+    if (!videoRef.current) return;
+    const n = [...comments];
+    n[i].timecode = secondsToTc(videoRef.current.currentTime);
+    setComments(n);
+  };
 
   const decide = async (decision, force = false) => {
     if (!latest) { toast.error("Chưa có phiên bản để duyệt"); return; }
@@ -202,6 +248,15 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
 
   return (
     <div className="space-y-4">
+      {isVideo && (
+        <div className="rounded-lg overflow-hidden border border-zinc-800/80 bg-black">
+          {videoUrl ? (
+            <video ref={videoRef} src={videoUrl} controls className="w-full max-h-72 bg-black" data-testid="review-video" />
+          ) : (
+            <div className="flex h-40 items-center justify-center text-sm text-zinc-500"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang tải video…</div>
+          )}
+        </div>
+      )}
       {canReview && latest ? (
         <div className="rounded-lg border border-zinc-800/80 bg-[#18181b] p-4">
           <p className="text-sm text-zinc-300 mb-3">Duyệt phiên bản <span className="font-mono text-blue-400">v{latest.version_number}</span></p>
@@ -211,6 +266,10 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
               <div key={i} className="flex gap-2">
                 <Input value={c.timecode} onChange={(e) => { const n = [...comments]; n[i].timecode = e.target.value; setComments(n); }}
                   placeholder="00:12" data-testid={`tc-time-${i}`} className="w-24 bg-[#0f0f11] border-zinc-800 font-mono text-sm" />
+                {isVideo && (
+                  <Button type="button" size="icon" variant="ghost" onClick={() => captureTime(i)} title="Lấy thời điểm hiện tại của video"
+                    data-testid={`tc-capture-${i}`} className="text-blue-400 shrink-0"><Clock className="h-4 w-4" /></Button>
+                )}
                 <Input value={c.text} onChange={(e) => { const n = [...comments]; n[i].text = e.target.value; setComments(n); }}
                   placeholder="Ghi chú tại timecode này" data-testid={`tc-text-${i}`} className="flex-1 bg-[#0f0f11] border-zinc-800 text-sm" />
                 {comments.length > 1 && (
@@ -260,7 +319,12 @@ function ReviewTab({ projectId, shot, versions, reviews, myRole, user, onChanged
               <ul className="mt-2 space-y-1">
                 {r.comments.map((c, i) => (
                   <li key={i} className="flex gap-2 text-sm">
-                    <span className="font-mono text-amber-400">{c.timecode || "—"}</span>
+                    {isVideo ? (
+                      <button onClick={() => seekTo(c.timecode)} data-testid={`seek-${r.id}-${i}`}
+                        className="font-mono text-amber-400 hover:underline">{c.timecode || "—"}</button>
+                    ) : (
+                      <span className="font-mono text-amber-400">{c.timecode || "—"}</span>
+                    )}
                     <span className="text-zinc-400">{c.text}</span>
                   </li>
                 ))}

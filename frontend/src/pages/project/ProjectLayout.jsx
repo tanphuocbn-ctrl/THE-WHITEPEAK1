@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import api from "@/lib/api";
-import { Loader2, GitBranch, KanbanSquare, FileText, Users, History } from "lucide-react";
+import { Loader2, GitBranch, KanbanSquare, FileText, Users, History, Frame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ProjectContext = createContext(null);
@@ -38,6 +38,7 @@ export default function ProjectLayout() {
           <nav className="mt-4 flex gap-6 overflow-x-auto">
             <NavLink to={`/projects/${id}`} end className={tab} data-testid="tab-structure"><GitBranch className="h-4 w-4" /> Cấu trúc</NavLink>
             <NavLink to={`/projects/${id}/board`} className={tab} data-testid="tab-board"><KanbanSquare className="h-4 w-4" /> Phân công</NavLink>
+            <NavLink to={`/projects/${id}/canvas`} className={tab} data-testid="tab-canvas"><Frame className="h-4 w-4" /> Canvas</NavLink>
             <NavLink to={`/projects/${id}/script`} className={tab} data-testid="tab-script"><FileText className="h-4 w-4" /> Kịch bản</NavLink>
             <NavLink to={`/projects/${id}/members`} className={tab} data-testid="tab-members"><Users className="h-4 w-4" /> Thành viên</NavLink>
             <NavLink to={`/projects/${id}/audit`} className={tab} data-testid="tab-audit"><History className="h-4 w-4" /> Lịch sử</NavLink>

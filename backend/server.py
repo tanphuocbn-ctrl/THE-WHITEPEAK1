@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 import auth as A
 import storage
 from seed import seed_demo
-from routers import auth_routes, projects, structure, assignments, versions, reviews, scripts, audit, misc
+from routers import auth_routes, projects, structure, assignments, versions, reviews, scripts, audit, misc, canvas
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
@@ -34,6 +34,7 @@ api_router.include_router(assignments.router)
 api_router.include_router(versions.router)
 api_router.include_router(reviews.router)
 api_router.include_router(scripts.router)
+api_router.include_router(canvas.router)
 api_router.include_router(audit.router)
 
 app.include_router(api_router)

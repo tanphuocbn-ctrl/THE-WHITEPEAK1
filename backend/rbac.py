@@ -21,30 +21,34 @@ PROJECT_CAPS = {
         "version.view", "version.upload",
         "review.view", "review.decide", "review.return",
         "script.view", "script.write",
+        "canvas.view", "canvas.write",
         "audit.view", "audit.restore",
     },
     "team_lead": {
         "project.view", "structure.view", "structure.write",
         "assignment.view", "assignment.write",
         "version.view", "version.upload",
-        "review.view", "script.view", "script.write", "audit.view",
+        "review.view", "script.view", "script.write",
+        "canvas.view", "canvas.write", "audit.view",
     },
     "member": {
         "project.view", "structure.view",
         "assignment.view", "version.view", "version.upload",
         "review.view", "script.view",
+        "canvas.view", "canvas.write",
     },
     "editor": {
         "project.view", "structure.view",
         "assignment.view", "version.view", "version.upload",
         "review.view", "script.view",
+        "canvas.view", "canvas.write",
     },
     "reviewer": {
         "project.view", "structure.view", "assignment.view",
         "version.view", "review.view", "review.decide", "review.return",
-        "script.view",
+        "script.view", "canvas.view",
     },
-    "guest": {"project.view", "structure.view", "version.view", "review.view", "script.view"},
+    "guest": {"project.view", "structure.view", "version.view", "review.view", "script.view", "canvas.view"},
 }
 
 

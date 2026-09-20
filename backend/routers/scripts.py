@@ -1,5 +1,7 @@
 import io
+import os
 import re
+import json
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -60,6 +62,86 @@ def parse_script(text: str) -> List[dict]:
 
 class ManualIn(BaseModel):
     raw_text: str
+
+
+class AIParseIn(BaseModel):
+    raw_text: str
+    provider: Optional[str] = "gemini"
+    model: Optional[str] = None
+
+
+AI_DEFAULT_MODELS = {
+    "gemini": "gemini-3.1-pro-preview",
+    "openai": "gpt-5.4",
+    "anthropic": "claude-sonnet-4-6",
+}
+
+AI_SYSTEM = (
+    "Bạn là trợ lý phân tích kịch bản phim. Nhiệm vụ: tách nội dung kịch bản thành danh sách cảnh (scene). "
+    "CHỈ trả về JSON hợp lệ dạng mảng, không giải thích, không markdown. "
+    'Mỗi phần tử: {"code": "S1", "heading": "tiêu đề cảnh gốc", "title": "tiêu đề ngắn", '
+    '"location": "bối cảnh", "time_of_day": "ngày/đêm...", "description": "tóm tắt nội dung cảnh"}. '
+    "Đánh số code S1, S2, ... theo thứ tự xuất hiện."
+)
+
+
+def _extract_json(text: str):
+    text = text.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
+        text = re.sub(r"\n?```$", "", text).strip()
+    start = text.find("[")
+    end = text.rfind("]")
+    if start != -1 and end != -1:
+        text = text[start:end + 1]
+    return json.loads(text)
+
+
+@router.post("/scripts/ai-parse")
+async def ai_parse_script(project_id: str, body: AIParseIn, user: dict = Depends(A.get_current_user)):
+    p = await get_project_or_404(project_id)
+    rbac.require_cap(user, p, "script.write")
+    provider = (body.provider or "gemini").lower()
+    if provider not in AI_DEFAULT_MODELS:
+        raise HTTPException(status_code=400, detail="Provider không hỗ trợ (openai/gemini/anthropic)")
+    model = body.model or AI_DEFAULT_MODELS[provider]
+    key = os.environ.get("EMERGENT_LLM_KEY")
+    if not key:
+        raise HTTPException(status_code=503, detail="Chưa cấu hình EMERGENT_LLM_KEY")
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        chat = LlmChat(api_key=key, session_id=f"script-{project_id}-{new_id()}",
+                       system_message=AI_SYSTEM).with_model(provider, model)
+        reply = await chat.send_message(UserMessage(text=body.raw_text[:120000]))
+        scenes_raw = _extract_json(reply if isinstance(reply, str) else str(reply))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI tách kịch bản lỗi: {e}. Hãy dùng nhập tay.")
+    parsed = []
+    for i, s in enumerate(scenes_raw, start=1):
+        if not isinstance(s, dict):
+            continue
+        parsed.append({
+            "code": s.get("code") or f"S{i}",
+            "heading": s.get("heading") or s.get("title") or f"Cảnh {i}",
+            "title": (s.get("title") or s.get("heading") or f"Cảnh {i}")[:120],
+            "location": s.get("location", ""),
+            "time_of_day": s.get("time_of_day", ""),
+            "description": s.get("description", ""),
+        })
+    if not parsed:
+        raise HTTPException(status_code=502, detail="AI không tách được cảnh nào. Hãy dùng nhập tay.")
+    doc = {
+        "id": new_id(), "project_id": project_id, "source_type": f"ai:{provider}",
+        "filename": f"AI · {provider}", "raw_text": body.raw_text, "parsed_scenes": parsed,
+        "ai_provider": provider, "ai_model": model,
+        "cost_note": f"{provider}/{model} · input {len(body.raw_text)} ký tự → {len(parsed)} cảnh",
+        "status": "staging", "created_by": user["id"], "created_at": now_iso(),
+    }
+    await db.script_stagings.insert_one(dict(doc))
+    await audit(project_id, "script", doc["id"], "stage", user,
+                after={"scenes": len(parsed), "source": f"ai:{provider}", "model": model},
+                label=f"Nhập kịch bản bằng AI ({provider} · {len(parsed)} cảnh)")
+    return clean(doc)
 
 
 class ConfirmIn(BaseModel):

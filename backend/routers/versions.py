@@ -132,12 +132,12 @@ async def complete_upload(project_id: str, shot_id: str, upload_id: str = Query(
 
 
 @router.get("/versions/{version_id}/download")
-async def download_version(project_id: str, version_id: str,
+async def download_version(project_id: str, version_id: str, request: Request,
                            authorization: str = Header(None), auth: str = Query(None)):
-    token = None
-    if authorization and authorization.startswith("Bearer "):
+    token = request.cookies.get("access_token")
+    if not token and authorization and authorization.startswith("Bearer "):
         token = authorization[7:]
-    elif auth:
+    if not token and auth:
         token = auth
     if not token:
         raise HTTPException(status_code=401, detail="Chưa xác thực")

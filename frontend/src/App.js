@@ -14,6 +14,7 @@ import Projects from "@/pages/Projects";
 import ProjectLayout from "@/pages/project/ProjectLayout";
 import Structure from "@/pages/project/Structure";
 import Board from "@/pages/project/Board";
+import Canvas from "@/pages/project/Canvas";
 import ScriptImport from "@/pages/project/ScriptImport";
 import Members from "@/pages/project/Members";
 import AuditLog from "@/pages/project/AuditLog";
@@ -35,6 +36,7 @@ function App() {
               <Route path="projects/:id" element={<ProjectLayout />}>
                 <Route index element={<Structure />} />
                 <Route path="board" element={<Board />} />
+                <Route path="canvas" element={<Canvas />} />
                 <Route path="script" element={<ScriptImport />} />
                 <Route path="members" element={<Members />} />
                 <Route path="audit" element={<AuditLog />} />
